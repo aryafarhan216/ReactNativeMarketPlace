@@ -11,6 +11,7 @@ import BottomNavPenjual from './Aktor/ComponentGlobal/BottomNavPenjual';
 import BottomNavAdmin from './Aktor/ComponentGlobal/BottomNavAdmin';
 import Chat from './Aktor/User/Pembeli/Chat';
 import ChatPenjual from './Aktor/User/Penjual/ChatPenjual';
+import Loading from './Aktor/ComponentGlobal/Loading';
 
 // Variable Stack
 const Stack = createNativeStackNavigator();
@@ -60,6 +61,11 @@ export default function App() {
        <Stack.Screen 
         name="ChatPenjual" 
         component={ChatPenjual} 
+        />
+      <Stack.Screen 
+        name="Loading" 
+        component={Loading} 
+        options={{headerShown:false}}
         />
       </Stack.Navigator>
     </NavigationContainer>

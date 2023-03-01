@@ -1,11 +1,10 @@
 import React, { useState, useEffect} from 'react'
-import { NativeBaseProvider, ScrollView, Box, FormControl, Text, Input,Image, Progress, TextArea, CheckIcon, Stack, Button,  Radio, Select, Center} from 'native-base'
+import { NativeBaseProvider, ScrollView, Box, FormControl, Text, Input,Image, Progress, TextArea, CheckIcon, Stack, Button,  Radio, Select, Center, VStack, HStack} from 'native-base'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { auth, db, storage} from "../../../firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { collection, doc, setDoc } from "firebase/firestore"; 
 import * as ImagePicker from "expo-image-picker/src/ImagePicker";
-
 
 const AddProduk = () => {
   const [namaProduk, setNamaProduk] = useState("");
@@ -18,6 +17,7 @@ const AddProduk = () => {
   const [perc, setPerc] = useState(null)
   // kategori
   const [umurProduk, setUmurProduk] = useState("");
+  const [mili, setMili] = useState("");
   const [value, setValue] = useState("UNISEX");
   const [service, setService] = useState("Semua Zodiak");
   
@@ -85,9 +85,7 @@ const AddProduk = () => {
           });
         }
       );
-      
     }
-
     image && blobImage();
   }, [image])
   
@@ -117,6 +115,7 @@ const AddProduk = () => {
         zodiak : service,
         jenisKelamin : value,
         umurProduk : umurProduk,
+        miliProduk : mili,
         imgProduk : fotoProduk
       }).then(() =>{
         alert("Produk Berhasil diUploud")
@@ -127,15 +126,14 @@ const AddProduk = () => {
         setService("Semua Zodiak")
         setValue("UNISEX")
         setUmurProduk("")
+        setMili("")
         setFotoProduk(null)
         setImage(null)
       }).catch((err) => alert(err));
     }else{
       alert("Form ada yang kosong")
     }
-    
   }
-
   console.log(image)
   return (
     <NativeBaseProvider>
@@ -207,8 +205,8 @@ const AddProduk = () => {
               </Box>
               
               </Box>
-              <Stack direction="row" space={4}>
-              <Box width="15%">
+              <HStack space={5}>
+              <Box width="20%">
               <FormControl >
                 <FormControl.Label>Umur</FormControl.Label>
                 <Input placeholder='20' keyboardType='numeric' 
@@ -218,6 +216,18 @@ const AddProduk = () => {
                 />
               </FormControl>
               </Box>
+              <Box width="20%">
+              <FormControl >
+                <FormControl.Label>Ukuran</FormControl.Label>
+                <Input placeholder='\ml' keyboardType='numeric' 
+                    type="text"
+                    value={mili}
+                    onChangeText= {text => setMili(text)}
+                />
+              </FormControl>
+              </Box>
+              </HStack>
+
               <Box> 
               <FormControl>
                 <FormControl.Label>Jenis Kelamin</FormControl.Label>
@@ -244,7 +254,6 @@ const AddProduk = () => {
                 </Radio.Group>
               </FormControl>
               </Box>
-              </Stack>
               {image && 
               
               <Center mt="3">

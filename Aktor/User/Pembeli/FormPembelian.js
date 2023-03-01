@@ -299,12 +299,15 @@ const FormPembelian = ({route, navigation}) => {
         setDoc(doc(docRef, `${idValid}`),{
           idPesanan : idValid,
           userPembeli : auth?.currentUser?.uid,
+          stokBeli : stok,
           userToko : listDetail[0].produk.userUid,
           detailPenjual : listDetail[0],
           detailPembeli : dataPembeli[0],
           jasaOngkir : value,
           totalOngkir : sumTotal(),
           isConfirm : false,
+          isConfirm1 : false,
+          isDone : false,
           resi : "",
           imgValid : fotoProduk
           
@@ -317,7 +320,6 @@ const FormPembelian = ({route, navigation}) => {
             navigation.navigate('Pesanan')
           })
         }).catch((err) => alert(err));
-        alert("Form ada yang kosong")
       }else{
         alert("Stok ada yang salah")
       }

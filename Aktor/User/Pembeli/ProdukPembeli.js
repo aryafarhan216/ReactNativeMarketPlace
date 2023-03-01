@@ -1,20 +1,19 @@
-import React, {useEffect, useState} from 'react'
+import {useEffect, useState} from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Linking } from 'react-native';
 import { NativeBaseProvider, ScrollView, Box, Text, VStack, HStack, 
   Center,FormControl, Input, Modal, Button,  ZStack, Image, AspectRatio, Pressable, Divider } from 'native-base'
 import { auth, db } from "../../../firebase";
-import { collection,  where, onSnapshot, query } from "firebase/firestore";
+import { collection,  where, onSnapshot, query, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useIsFocused } from '@react-navigation/native';
 
-  // image
-import { Ionicons } from '@expo/vector-icons';
-const img = require('../../../assets/src/DrawKit-Vector-Illustration-ecommerce-17.png')
-const ProdukPembeli = () => {
+const ProdukPembeli = ({navigation}) => {
   const [showModal, setShowModal] = useState(false);
   const [dataPesanan, setDataPesanan] = useState([null])
+  const [isConfirm, setIsConfirm] = useState(false);
   const [dataModal, setDataModal] = useState(
     {
+      idPesanan:"",
       namaToko:"", 
       namaProduk:"", 
       imgProduk:"",
@@ -22,10 +21,12 @@ const ProdukPembeli = () => {
       kurir:"", 
       resi:""
   })
+  const [isFocus, setIsFocus] = useState(useIsFocused())
   const focus = useIsFocused()
-
+  console.log(isFocus)
   useEffect(() =>{
-    if (focus) {
+    console.log(focus)
+    if (focus == true) {
        console.log("masuk")
       // realtime
       let produkRef = collection(db,"pesanan")
@@ -45,9 +46,37 @@ const ProdukPembeli = () => {
       return () =>{
         realData()
       }
+    } else{
+      console.log("masuk")
+      // realtime
+      let produkRef = collection(db,"pesanan")
+      let q = query(produkRef, where("userPembeli", "==", `${auth.currentUser?.uid}`))
+      const realData  = onSnapshot(q,
+        (snapShot) =>{
+          let tempList = []
+          snapShot.docs.forEach((doc) => {
+            tempList.push(doc.data())
+          });
+          setDataPesanan(tempList)
+        },
+        (error) =>{
+          console.log(error)
+        }
+      )
+      return () =>{
+        realData()
+      }
     }
-  }, [])
+  },[isFocus])
 
+  const handleUpdate = async(idPesanan) =>{
+    console.log("masuk", idPesanan)
+    const updateUser = doc(db, "pesanan",`${idPesanan}`)
+    await updateDoc(updateUser, {
+      isConfirm1 : true
+      }).catch((err) => alert(err))
+      alert("Pesanan Sudah Selesai")
+  }
   return (
     <NativeBaseProvider>
     <SafeAreaView>
@@ -59,6 +88,7 @@ const ProdukPembeli = () => {
         return(
           <Pressable onPress={() => {
         setDataModal({
+          idPesanan : dataPesanan?.idPesanan,
           namaToko : dataPesanan?.detailPenjual?.detailToko?.namaToko,
           namaProduk : dataPesanan?.detailPenjual?.produk?.namaProduk,
           imgProduk : dataPesanan?.detailPenjual?.produk?.imgProduk,
@@ -115,10 +145,12 @@ const ProdukPembeli = () => {
                />
               <Box>
               <Text mt="3">Status :</Text>
-            {dataPesanan?.isConfirm === false
-            ?<Text>Waiting to Admin</Text>
-            :<Text>Seller Preparing</Text>
-            }
+              { dataPesanan?.isDone === false ?
+                    dataPesanan?.isConfirm === false
+                    ?<Text>Waiting to Admin</Text>
+                    :<Text>Seller Preparing</Text> :
+                  <Text>Selesai</Text>
+                }
               </Box>
             </HStack>
 
@@ -219,8 +251,10 @@ const ProdukPembeli = () => {
               </Button>
               <Button onPress={() => {
               setShowModal(false);
+              setIsConfirm(true)
+              handleUpdate(dataModal?.idPesanan)
             }} colorScheme="yellow">
-                Done
+                Konfirmasi
               </Button>
             </Button.Group>
           </Modal.Footer>
