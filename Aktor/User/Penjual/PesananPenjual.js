@@ -80,6 +80,7 @@ const PesananPenjual = () => {
                 idPesanan : data?.idPesanan,
                 imgValid : data?.imgValidAdmin,
                 jasaOngkir : data?.jasaOngkir,
+                resi : data?.resi,
                 alamat : `${data?.detailPembeli?.address?.city}, ${data?.detailPembeli?.address?.district}, ${data?.detailPembeli?.address?.street}, ${data?.detailPembeli?.address?.region}, ${data?.detailPembeli?.address?.subregion}`
               })
 
@@ -213,11 +214,20 @@ const PesananPenjual = () => {
         <Divider mt="4"/>
         <FormControl mt="3">
           <FormControl.Label>ADD RESI</FormControl.Label>
+          { dataModal.resi == ""
+          ?
           <Input 
                 type="text"
                 value={resi}
                 onChangeText= {text => setResi(text)}
           />
+          :
+          <Box>
+            resi : {dataModal.resi}
+          </Box>
+
+          }
+         
         </FormControl>
         </Box>
         :

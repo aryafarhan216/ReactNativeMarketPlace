@@ -12,11 +12,12 @@ const Loading = ({navigation}) => {
 
     useEffect(() =>{
       if (focus == true){
+        // navigation.navigate("Login")
         const docRef = doc(db, "user", auth.currentUser?.uid);
         const getData = async () =>{
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            setDataUser( docSnap.data())
+            setDataUser(docSnap.data())
           } else {
             // doc.data() will be undefined in this case
             console.log("No such document!");
@@ -25,14 +26,12 @@ const Loading = ({navigation}) => {
         dataUser && getData()
       }
       const load = () =>{
-        if(dataUser?.seller != undefined){
-            if(!dataUser?.seller){
+            if(dataUser?.seller != true){
                 navigation.navigate("User")
             }else{
                 navigation.navigate("Penjual")
             }
-        }
-        navigation.navigate("User")
+
       }
 
       dataUser && load()

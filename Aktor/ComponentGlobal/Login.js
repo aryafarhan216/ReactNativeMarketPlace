@@ -1,12 +1,12 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, provider } from "../../firebase";
-import { doc, setDoc } from "firebase/firestore"; 
+import { db,auth} from "../../firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { Box, Text, Heading, VStack, FormControl, Input, Link, Button, HStack, Center, NativeBaseProvider, Image } from "native-base";
 const Logo = require('../../assets/src/Logo.png')
 
+// tinggal add kedatabase emailnya
 export default function Login ({navigation}){
     const [email, setEmail]= useState('');
     const [password, setPassword] = useState('');
@@ -41,19 +41,10 @@ export default function Login ({navigation}){
         }
 
     }
-
-    const addUser = async (uid, emailId) =>{
-        await setDoc(doc(db, "user", uid), {
-            emailId: emailId,
-            address:"",
-            seller:false,
-            timestamp: serverTimestamp()
-          })
-    }
     return(
         <NativeBaseProvider>
         <Center  flex={1} px="3">
-            <Center w="100%">
+        <Center w="100%">
         <Box safeArea p="2" py="5" w="90%" maxW="290">
             <HStack justifyContent="center">
             <Center>
@@ -69,6 +60,20 @@ export default function Login ({navigation}){
             }}>
             Welcome
             </Heading>
+            <HStack mt="6" justifyContent="center">
+                <Text fontSize="sm" color="coolGray.600" _dark={{
+                color: "warmGray.200"
+            }}>
+                Login With{" "}
+                </Text>
+                <Link _text={{
+                color: "#EFAF00",
+                fontWeight: "medium",
+                fontSize: "sm"
+            }} onPress={()=> navigation.navigate('LoginGoogle')}>
+                Google
+                </Link>
+            </HStack>
             <VStack space={3}>
             <FormControl>
                 <FormControl.Label>Email</FormControl.Label>

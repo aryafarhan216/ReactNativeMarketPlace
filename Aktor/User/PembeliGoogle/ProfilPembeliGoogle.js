@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { auth, db} from "../../../firebase";
-import { signOut } from "firebase/auth";
+import { db} from "../../../firebase";
 import { doc, getDoc, updateDoc} from "firebase/firestore";
 import { Center, ScrollView, Box, NativeBaseProvider, FormControl, Input, Divider, 
   Button, TextArea, Checkbox, HStack, Text } from 'native-base'
 import * as Location from 'expo-location';
 import { useIsFocused } from '@react-navigation/native';
-
+import auth from '@react-native-firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 // Icons/Images
 import { AntDesign } from '@expo/vector-icons';
 
-const ProfilPembeli = ({navigation}) => {
+const ProfilPembeliGoogle = ({navigation}) => {
   const [dataUser, setDataUser] = useState([null])
   const [nama, setNama] = useState("")
   const [hp, setHp] = useState("")
@@ -26,7 +26,7 @@ const ProfilPembeli = ({navigation}) => {
 
   useEffect(() =>{
     if (focus == true){
-      const docRef = doc(db, "user", auth.currentUser?.uid);
+      const docRef = doc(db, "user", auth().currentUser?.uid);
       const getData = async () =>{
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -72,7 +72,8 @@ const ProfilPembeli = ({navigation}) => {
   
   const handleUpdate = async() =>{
     console.log("masuk")
-    const updateUser = doc(db, "user",`${auth.currentUser?.uid}`)
+    let uid = auth().currentUser?.uid
+    const updateUser = doc(db, "user",`${uid}`)
     await updateDoc(updateUser, {
         nama:nama,
         noHp:hp,
@@ -82,18 +83,14 @@ const ProfilPembeli = ({navigation}) => {
       }).catch((err) => alert(err))
       alert("sudah terupdate")
   }
-
+  GoogleSignin.configure({
+    webClientId: '676594783389-071d1dcan0maqledg5apv9c7kq1dmsci.apps.googleusercontent.com',
+  });
   const handleLogOut = async () =>{
-    signOut(auth).then(() => {
-      navigation.navigate('Login')
-    }).catch((error) => {
-      alert(err)
-    })
-    if(dataUser?.isGoogle){
       await GoogleSignin.revokeAccess();
       await auth().signOut();
       navigation.navigate('Login')
-    }
+    
   }
 
   return (
@@ -182,4 +179,4 @@ const ProfilPembeli = ({navigation}) => {
   )
 }
 
-export default ProfilPembeli
+export default ProfilPembeliGoogle

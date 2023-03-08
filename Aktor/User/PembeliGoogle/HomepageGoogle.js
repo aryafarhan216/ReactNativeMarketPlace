@@ -5,17 +5,17 @@ import { NativeBaseProvider, ScrollView, Box, Text, VStack, HStack,
 import { db } from "../../../firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { useIsFocused } from '@react-navigation/native';
+import auth from '@react-native-firebase/auth';
 // image
 
 
-const Homepage = ({navigation}) => {
+const HomepageGoogle = ({navigation}) => {
   const [data, setData] = useState([null])
   const focus = useIsFocused()
-
+  const uid = auth().currentUser?.email
     useEffect(() =>{
       if (focus === true){
         // realtime
-
       let produkRef = collection(db,"produk")
       let q = query(produkRef, where("stokProduk", "!=", "0"))
       const realData  = onSnapshot(q,
@@ -50,7 +50,7 @@ const Homepage = ({navigation}) => {
       <Box>
     {data?.map((data, index) =>{
           return(
-            <Pressable key={index} onPress={() => navigation.navigate('DetailPage', {
+            <Pressable key={index} onPress={() => navigation.navigate('DetailPageGoogle', {
               detailProduk : data
             })}>
             <Box bg="white" rounded="xl" p="5" mt="4" mx="5" >
@@ -138,4 +138,4 @@ const Homepage = ({navigation}) => {
 }
 
 
-export default Homepage
+export default HomepageGoogle

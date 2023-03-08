@@ -129,11 +129,13 @@ const PesananSelesai = () => {
     }
   }, [image])
 
+  // agar hilang di pesanan
   const handleStatus = async(idPesanan) =>{
     console.log(idPesanan)
     const updateUser = doc(db, "pesanan",`${idPesanan}`)
     await updateDoc(updateUser, {
       isConfirm1: false,
+      isConfirm:false,
       isDone:true,
       imgValidAdmin: fotoProduk
     }).then(()=>{
