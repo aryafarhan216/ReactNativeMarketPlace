@@ -413,8 +413,19 @@ const Batal = () => {
       </Box>
       <Box backgroundColor="white" p={4} mt="3" rounded="md">
         
-        { dataModal.pesanan?.imgValidAdmin === ''
+        { dataModal.pesanan?.imgValidAdmin 
         ?
+
+        <Box>
+        <Center my='3'>
+        <Text>Foto Bukti Transfer</Text>
+        <Image source={{ uri: dataModal.pesanan?.imgValidAdmin }} style={{ width: 200, height: 200 }} alt="Fotobukti"/>
+        </Center>
+        </Box>
+
+      
+
+        :
         <Box>
         {image && 
           <Center my='3'>
@@ -427,13 +438,6 @@ const Batal = () => {
         <Button onPress={pickImage}>
         upload
         </Button>
-        </Box>
-        :
-        <Box>
-        <Center my='3'>
-        <Text>Foto Bukti Transfer</Text>
-        <Image source={{ uri: dataModal.pesanan?.imgValidAdmin }} style={{ width: 200, height: 200 }} alt="Fotobukti"/>
-        </Center>
         </Box>
         }
         

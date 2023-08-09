@@ -323,7 +323,8 @@ return (
       :
       <Box>
       <FormControl mt="1">
-      
+      <Text bold fontSize="md">Total {getTotalOngkirSum()}</Text>
+      <Text>Detail Pengantar: </Text>
         <Box>
           Nama Pengirim: {dataModal.pesanan?.namaAntar}
           No Pengirim: {dataModal.pesanan?.noAntar}

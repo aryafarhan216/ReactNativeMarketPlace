@@ -182,7 +182,11 @@ const ProdukPembeli = ({navigation}) => {
             ) : dataPesanan?.noAntar ? (
               <Box>
                 <Text>
-                  Pengirim : {dataPesanan?.namaAntar} | No Pengirim: {dataPesanan?.noAntar}
+                  Pengirim : {dataPesanan?.namaAntar} 
+                  
+                </Text>
+                <Text>No Pengirim: {dataPesanan?.noAntar}
+
                 </Text>
               </Box>
             ) : (
@@ -298,8 +302,8 @@ const ProdukPembeli = ({navigation}) => {
               </Box>
               :
               <Box>
-              <Text>Nama Antar : {dataModal.namaAntar}</Text>
-              <Text>No Antar ; {dataModal.noAntar}</Text>
+              <Text>Nama Antar : {dataModal.pesanan?.namaAntar}</Text>
+              <Text>No Antar : {dataModal.pesanan?.noAntar}</Text>
               </Box>
               
               }

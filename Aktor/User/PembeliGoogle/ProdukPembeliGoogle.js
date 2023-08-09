@@ -184,9 +184,15 @@ const ProdukPembeliGoogle = ({navigation}) => {
               <Text>Waiting to Admin</Text>
             ) : dataPesanan?.noAntar ? (
               <Box>
+              <Box>
                 <Text>
-                  Pengirim : {dataPesanan?.namaAntar} | No Pengirim: {dataPesanan?.noAntar}
+                  Pengirim : {dataPesanan?.namaAntar} 
+                  
                 </Text>
+                <Text>No Pengirim: {dataPesanan?.noAntar}
+
+                </Text>
+              </Box>
               </Box>
             ) : (
               <Text>sedang diantar</Text>
@@ -302,8 +308,8 @@ const ProdukPembeliGoogle = ({navigation}) => {
               </Box>
               :
               <Box>
-              <Text>Nama Antar : {dataModal.namaAntar}</Text>
-              <Text>No Antar ; {dataModal.noAntar}</Text>
+              <Text>Nama Antar : {dataModal.pesanan?.namaAntar}</Text>
+              <Text>No Antar : {dataModal.pesanan?.noAntar}</Text>
               </Box>
               
               }

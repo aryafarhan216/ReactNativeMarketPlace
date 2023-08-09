@@ -118,7 +118,9 @@ const FormPembelian = ({route, navigation}) => {
   const [ongkir, setOngkir] = useState([])
   const [ongkirD, setOngkirD] = useState([])
   const [distance, setDistance] = useState([]);
-  const [value, setValue] = useState(new Array(listDetail[0].length).fill('one'));
+  const initialRadioValues = new Array(listDetail[0].length).fill('one'); // Initialize with 'one'
+
+const [value, setValue] = useState(initialRadioValues);
 
 
   
@@ -354,7 +356,6 @@ const getIdCityPenjual = async () => {
         totalOngkir += ongkirD[index] === 'jauh' ? 0 : parseInt(ongkirD[index]);
       }
     });
-  
     return totalOngkir;
   };
   
@@ -453,7 +454,8 @@ const getIdCityPenjual = async () => {
               const stokUpdate = stokIsi - flattenedStok[index];
 
               const hargaProdukInner = item.produk[i][selectedHarga];
-              hargaPerProduk.push((parseInt(hargaProdukInner) * flattenedStok[index]) + (value[i] === 'one' ? parseInt(ongkir[index]?.cost[0]?.value) : parseInt(ongkirD[index])))
+              console.log("lihat index", index, value[index])
+              hargaPerProduk.push((parseInt(hargaProdukInner) * flattenedStok[index]) + (value[index] === 'one' ? parseInt(ongkir[index]?.cost[0]?.value) : parseInt(ongkirD[index])))
               const jasaTotalOngkir = {
                 hargaOngkir : hargaPerProduk[i]
             }
@@ -543,6 +545,7 @@ const getIdCityPenjual = async () => {
       return newStok;
     });
   };
+  console.log(ongkirD)
   return (
     <NativeBaseProvider>
     <SafeAreaView>
@@ -658,14 +661,16 @@ const getIdCityPenjual = async () => {
         
       {ongkir.map((ongkirData, index) => (
   <React.Fragment key={index}>
-    {distance[index] <= 15 ? (
+    {distance[index] <= 15? (
       <Box key={index}>
-        <Radio.Group
+      <Radio.Group
           name="myRadioGroup"
           accessibilityLabel="favorite number"
-          value={value}
+          value={value[index]}
           onChange={(nextValue) => {
-            setValue(nextValue);
+            const updatedValue = [...value];
+            updatedValue[index] = nextValue;
+            setValue(updatedValue);
           }}
         >
           <Radio value="one" my={1} colorScheme="yellow">
@@ -698,6 +703,11 @@ const getIdCityPenjual = async () => {
 
 
         <Box backgroundColor="white" p={4} mt="3" rounded="md">
+           <Text bold> Jarak Toko dan Pembeli</Text>
+           {distance.map((data, index) => (
+                <Text key={index}>Toko{index+1} :{data} KM</Text>
+            ))}
+          
           <Text bold> Pembayaran</Text>
           <Text > Total Pembayaran</Text>
           <Text bold fontSize="lg" color="#EFAF00" mb={3}> RP {sumTotal()}</Text>

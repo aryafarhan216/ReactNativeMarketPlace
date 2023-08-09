@@ -343,10 +343,6 @@ const date = Timestamp.fromDate(currentDate);
   </Box>
 </VStack>
 ))}
-
-
-
-          
           <Box>
           </Box>
       </Box>
