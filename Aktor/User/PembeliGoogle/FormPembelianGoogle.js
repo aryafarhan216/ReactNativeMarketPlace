@@ -119,7 +119,8 @@ const FormPembelianGoogle = ({route, navigation}) => {
   const [ongkir, setOngkir] = useState([])
   const [ongkirD, setOngkirD] = useState([])
   const [distance, setDistance] = useState([]);
-  const [value, setValue] = useState(new Array(listDetail[0].length).fill('one'));
+  const initialRadioValues = new Array(listDetail[0].length).fill('one'); // Initialize with 'one'
+  const [value, setValue] = useState(initialRadioValues);
 
 
   
@@ -656,16 +657,22 @@ const getIdCityPenjual = async () => {
   <React.Fragment key={index}>
     {distance[index] <= 15 ? (
       <Box key={index}>
-        <Radio.Group
+      <Radio.Group
           name="myRadioGroup"
           accessibilityLabel="favorite number"
-          value={value}
+          value={value[index]}
           onChange={(nextValue) => {
-            setValue(nextValue);
+            const updatedValue = [...value];
+            updatedValue[index] = nextValue;
+            setValue(updatedValue);
           }}
         >
           <Radio value="one" my={1} colorScheme="yellow">
             <Box backgroundColor="white" p={4} mt="3" rounded="md">
+            <Text bold> Jarak Toko dan Pembeli</Text>
+            {distance.map((data, index) => (
+                  <Text key={index}>Toko{index+1} :{data} KM</Text>
+              ))}
               <Text bold> Pengiriman</Text>
               <Text> Ekspedisi : <Text bold> JNE</Text></Text>
               <Text> Estimasi : <Text bold> {ongkirData.cost[0].etd} Hari</Text></Text>

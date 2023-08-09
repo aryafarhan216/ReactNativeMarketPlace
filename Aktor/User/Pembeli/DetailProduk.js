@@ -92,10 +92,23 @@ const DetailProduk = ({route, navigation}) => {
 
     const handleBuy =  () =>{
         navigation.navigate('FormPembelian', {
-              detailPembelian : [dataBeli]
+              detailPembelian : transformedData
             })
     }
-    console.log("data detail", dataBeli)
+
+    const transformedData = [];
+
+        // Push the first object into the array
+        transformedData.push({
+        detailToko: dataBeli.detailToko,
+        idWishlist: dataBeli.dataDetail,
+        produk: [dataBeli.produk],
+        userUid: dataBeli.userUid
+        });
+
+        // Push the second object into the array
+
+        console.log("isi", transformedData);
   return (
     <NativeBaseProvider>
     <SafeAreaView>
