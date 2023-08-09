@@ -4,25 +4,21 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Box, NativeBaseProvider, ScrollView, Stack, Text, Image, Radio, 
   Divider, Button, Center, FormControl, Input} from 'native-base'
 import * as ImagePicker from 'expo-image-picker';
-import { doc, getDoc, setDoc, collection, updateDoc } from "firebase/firestore"; 
+import { doc, getDoc, setDoc, collection, updateDoc, Timestamp } from "firebase/firestore"; 
 import { useIsFocused } from '@react-navigation/native';
 import { auth, db, storage} from "../../../firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const FormPembelian = ({route, navigation}) => {
-  const [value, setValue] = useState("one");
+  
   const [dataPembeli, setDataPembeli] = useState([null])
-  const [stok, setStok] = useState("");
+  const [detailAlamat, setDetailAlamat] = useState("");
   const {detailPembelian} = route.params
-  const listDetail = []
-  listDetail.push(detailPembelian)
-// varible id
-  const [idCityPenjual, setIdCityPenjual] = useState("")
-  const [idCityPembeli, setIdCityPembeli] = useState("")
-  const [ongkir, setOngkir] = useState(null)
-// distance
-  const [distance, setDistance] = useState("")
-  const [ongkirD, setOngkirD] = useState("")
+  const listDetail = [detailPembelian]
+  const [stok, setStok] = useState(listDetail[0]?.map(() => "") || [])
+  const [miliProduk, setMiliProduk] = useState(listDetail[0]?.map(() => "1") || []);
+
+  
   const focus = useIsFocused()
 // image
   const [fotoProduk, setFotoProduk] = useState(null)
@@ -30,17 +26,17 @@ const FormPembelian = ({route, navigation}) => {
 
   useEffect(() =>{
     if (focus === true){
-      console.log("masuk focus")
+    
+
+
       // upload image
       const blobImage = async() =>{
-        console.log("masukBlob")
         const blob = await new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.onload = function () {
             resolve(xhr.response);
           };
           xhr.onerror = function (e) {
-            console.log(e);
             reject(new TypeError("Network request failed"));
           };
           xhr.responseType = "blob";
@@ -99,182 +95,8 @@ const FormPembelian = ({route, navigation}) => {
   
       image && blobImage();
 
-      // take dataPembeli
-      const data = async() =>{
-        console.log("masuk")
-        const docRef = doc(db, "user", `${auth?.currentUser.uid}`);
-        const docSnap = await getDoc(docRef);
-        let tempData = []
-        if (docSnap.exists()) {
-          tempData.push(docSnap.data())
-        } else {
-          console.log("No such document!");
-        }
-        setDataPembeli(tempData)
       }
-
-      const getIdCityPenjual = async () =>{
-        const dataRegion = await fetch('https://api.rajaongkir.com/starter/province/?id=',
-        {
-          method: 'GET',
-          headers:{key: 'da33de125c84a7a569abb5cf558640c4'}
-        }).then((req) =>{
-          return req.text()
-        }).then((data) => {
-          let dataBody = JSON.parse(data)
-          let dataResult = dataBody.rajaongkir.results
-          let filterProv= dataResult.filter(result => result.province === listDetail[0]?.detailToko?.address?.region)
-          const idProv = filterProv.map(result => result.province_id);
-          // get cityid
-          const getCity = async (id) =>{
-            const dataRegion = await fetch(`https://api.rajaongkir.com/starter/city?id=&province=${id}`,
-            {
-              method: 'GET',
-              headers:{key: 'da33de125c84a7a569abb5cf558640c4'}
-            }).then((req) =>{
-              return req.text()
-            }).then((data) => {
-              let dataBody = JSON.parse(data)
-              let dataResult = dataBody.rajaongkir.results
-              let city = listDetail[0]?.detailToko?.address?.subregion
-              let cityName = city.replace("Kota ","")
-              let filterCity = dataResult.filter(result => result.city_name === cityName)
-              const cityId = filterCity.map(result => result.city_id);
-              setIdCityPenjual(cityId)
-            })
-            .catch((err) =>{
-              console.log(err)
-            })
-          }
-          getCity(idProv)
-        })
-        .catch((err) =>{
-          console.log(err)
-        })
-      }
-
-      // get id city pembeli
-      const getIdCityPembeli= async () =>{
-        const dataRegion = await fetch('https://api.rajaongkir.com/starter/province/?id=',
-        {
-          method: 'GET',
-          headers:{key: 'da33de125c84a7a569abb5cf558640c4'}
-        }).then((req) =>{
-          return req.text()
-        }).then((data) => {
-          let dataBody = JSON.parse(data)
-          let dataResult = dataBody.rajaongkir.results
-          let filterProv= dataResult.filter(result => result.province === dataPembeli[0]?.address?.region)
-          const idProv = filterProv.map(result => result.province_id);
-          // get cityid
-          const getCity = async (id) =>{
-            const dataRegion = await fetch(`https://api.rajaongkir.com/starter/city?id=&province=${id}`,
-            {
-              method: 'GET',
-              headers:{key: 'da33de125c84a7a569abb5cf558640c4'}
-            }).then((req) =>{
-              return req.text()
-            }).then((data) => {
-              let dataBody = JSON.parse(data)
-              let dataResult = dataBody.rajaongkir.results
-              let city = dataPembeli[0]?.address?.subregion
-              let cityName = city.replace("Kota ","")
-              let filterCity = dataResult.filter(result => result.city_name === cityName)
-              const cityId = filterCity.map(result => result.city_id);
-              setIdCityPembeli(cityId)
-            })
-            .catch((err) =>{
-              console.log(err)
-            })
-          }
-          getCity(idProv)
-        })
-        .catch((err) =>{
-          console.log(err)
-        })
-      }
-      
-      getIdCityPenjual()
-      getIdCityPembeli()
-      data()
-
-      if(idCityPembeli[0] != "" && idCityPenjual[0] != ""){
-        console.log("masuk hehe")
-        const getOngkir = async () =>{
-          const dataRegion = await fetch('https://api.rajaongkir.com/starter/cost',
-          {
-            method: 'POST',
-            headers: 
-            {
-            key: 'da33de125c84a7a569abb5cf558640c4', 
-            'content-type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-              origin: '353',
-              destination: '353',
-              weight: 1700,
-              courier: 'jne'
-            }).toString()
-          }).then((req) =>{
-            return req.text()
-          }).then((data) =>{
-            let dataBody = JSON.parse(data)
-            setOngkir(dataBody.rajaongkir.results[0].costs[0])
-          }).catch((e) =>{
-            console.log(e)
-          })
-        }
-  
-        // get distance
-        if(listDetail[0].detailToko.isSiantar == true && dataPembeli[0]?.isSiantar == true){
-          const getDistanceA = async() =>{
-            console.log("function distance")
-            // pembeli
-            const startLat = dataPembeli[0]?.addressCord?.coords?.latitude
-            const startLon = dataPembeli[0]?.addressCord?.coords?.longitude
-            // penjual
-            const endLat = detailPembelian.detailToko.addressCord.coords.latitude
-            const endLon = detailPembelian.detailToko.addressCord.coords.longitude
-            const apiKey = '5b3ce3597851110001cf6248bd0768f706814962a1fe5e4b91769469';
-            const getDistance = await fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${startLon},${startLat}&end=${endLon},${endLat}`)
-            .then(response => response.json())
-            .then(data => {
-              const distanceInKm = (data.features[0].properties.segments[0].distance / 1000).toFixed(1);
-              setDistance(distanceInKm)
-              if(distanceInKm <= 5.0) {
-                console.log("masuk 1")
-                setOngkirD(10000)
-              }else if(distanceInKm <= 10.0) {
-                console.log("masuk 2")
-                setOngkirD(15000)
-              }else{
-                setOngkirD(20000)
-              }
-
-              // if(distanceInKm <= 10.0) setOngkirD(15000)
-            })
-            .catch(error => console.error(error));
-          }
-         getDistanceA() 
-          
-        }
-        getOngkir()
-       
-      }
-    }
-
-    
-  }, [value, image])
-
-  const sumTotal= () =>{
-    if(value === 'one'){
-      let total = parseInt(ongkir?.cost[0]?.value) + (parseInt(listDetail[0].produk.hargaProduk) * parseInt(stok))
-      return total
-    }else{
-      let total = parseInt(ongkirD) + (parseInt(listDetail[0].produk.hargaProduk) * parseInt(stok))
-      return total
-    }
-  }
+    }, [value, image])
 
   const pickImage = async () =>{
     console.log("masuk foto")
@@ -290,117 +112,591 @@ const FormPembelian = ({route, navigation}) => {
     }
   }
 
-  const handleUpload = async() =>{
-    if(stok != "" && parseInt(stok) >= 0 && parseInt(stok) <= listDetail[0].produk.stokProduk){
-      if(fotoProduk != null && dataPembeli[0]?.address != "" && detailPembelian.detailToko.address != ""){
-        const idValid = 'P' + new Date().getTime()
-        let stokUpdate =  parseInt(listDetail[0].produk.stokProduk) - stok
-        const docRef = collection(db, "pesanan")
-        setDoc(doc(docRef, `${idValid}`),{
-          idPesanan : idValid,
-          userPembeli : auth?.currentUser?.uid,
-          stokBeli : stok,
-          userToko : listDetail[0].produk.userUid,
-          detailPenjual : listDetail[0],
-          detailPembeli : dataPembeli[0],
-          jasaOngkir : value,
-          totalOngkir : sumTotal(),
-          isConfirm : false,
-          isConfirm1 : false,
-          isDone : false,
-          resi : "",
-          imgValid : fotoProduk
-          
-        }).then(async ()=>{
-          const updateUser = doc(db, "produk",`${listDetail[0].produk.idProduk}`)
-          await updateDoc(updateUser, {
-            stokProduk : stokUpdate
-          }).then(() =>{
-            alert("Produk Berhasil DiBeli ;)")
-            navigation.navigate('Pesanan')
-          })
-        }).catch((err) => alert(err));
+  // New Cart
+  const [idCityPenjual, setIdCityPenjual] = useState([]);
+  const [idCityPembeli, setIdCityPembeli] = useState("");
+  const [ongkir, setOngkir] = useState([])
+  const [ongkirD, setOngkirD] = useState([])
+  const [distance, setDistance] = useState([]);
+  const [value, setValue] = useState(new Array(listDetail[0].length).fill('one'));
+
+
+  
+  useEffect(() => {
+    if (focus) {
+      setMiliProduk(
+        listDetail[0]?.map((item) => {
+          return item?.produk?.map(() => "1") || [];
+        }) || []
+      );
+  
+      // Initialize the stok state with empty values for each produk item
+      setStok(
+        listDetail[0]?.map((item) => {
+          return item?.produk?.map(() => "") || [];
+        }) || []
+      );
+      fetchData();
+    }
+  }, [focus]);
+
+  const fetchData = async () => {
+    await data();
+    const cityPembeli = await getIdCityPembeli();
+    const cityPenjual = await getIdCityPenjual();
+
+    if (cityPembeli && cityPenjual) {
+      if (cityPenjual.length === listDetail[0].length){
+        setIdCityPembeli(cityPembeli);
+        setIdCityPenjual(cityPenjual);
+        calculateDistances();
+        fetchOngkir();
       }else{
-        alert("Stok ada yang salah")
+      }
+    }
+  };
+
+  const fetchOngkir = async () => {
+    try {
+      // Use Promise.all to wait for both idCityPembeli and idCityPenjual to resolve
+      const [pembeli, penjual] = await Promise.all([idCityPembeli, idCityPenjual]);
+      // Now you can call getOngkir and pass idCityPembeli and idCityPenjual as arguments
+      await getOngkir(idCityPembeli, idCityPenjual);
+      
+    } catch (error) {
+      alert(error);
+    }
+  };
+  
+  const data = async() =>{
+        const docRef = doc(db, "user", `${auth?.currentUser.uid}`);
+        const docSnap = await getDoc(docRef);
+        let tempData = []
+        if (docSnap.exists()) {
+          tempData.push(docSnap.data())
+        } else {
+          console.log("No such document!");
+        }
+        setDataPembeli(tempData)
+      }
+const getIdCityPembeli = async () => {
+  try {
+    const dataRegion = await fetch('https://api.rajaongkir.com/starter/province/?id=', {
+      method: 'GET',
+      headers: { key: 'c2c121c370d4e8d81c15514667ed23da' }
+    });
+    const data = await dataRegion.json();
+    const dataResult = data.rajaongkir.results;
+    const filterProv = dataResult.filter(result => result.province === dataPembeli[0]?.address?.region);
+
+    if (filterProv.length === 0) {
+      console.log("Province not found in API response");
+      return null;
+    }
+
+    const idProv = filterProv[0].province_id;
+
+    const dataRegionCity = await fetch(`https://api.rajaongkir.com/starter/city?id=&province=${idProv}`, {
+      method: 'GET',
+      headers: { key: 'c2c121c370d4e8d81c15514667ed23da' }
+    });
+    const dataCity = await dataRegionCity.json();
+    
+    const dataResultCity = dataCity.rajaongkir.results;
+
+    const cityName = dataPembeli[0]?.address?.subregion?.replace("Kota ", "");
+    const filterCity = dataResultCity.filter((result) => result.city_name === cityName);
+
+    if (filterCity.length > 0) {
+      const cityId = filterCity[0].city_id;
+      return cityId;
+    } else {
+      alert("City not found in API response");
+      return null;
+    }
+  } catch (err) {
+    alert(e);
+    return null;
+  }
+};
+
+const getIdCityPenjual = async () => {
+  try {
+    const dataRegion = await fetch('https://api.rajaongkir.com/starter/province/?id=', {
+      method: 'GET',
+      headers: { key: 'c2c121c370d4e8d81c15514667ed23da' }
+    });
+    const data = await dataRegion.json();
+    const dataResult = data.rajaongkir.results;
+    const newIdCityPenjual = [];
+
+    if (listDetail[0].length > 0) {
+      const sellers = listDetail[0];
+      for (let i = 0; i < sellers.length; i++) {
+        const sellerRegion = sellers[i]?.detailToko?.address?.region;
+        const filterProv = dataResult.filter((result) => result.province === sellerRegion);
+
+        if (filterProv.length > 0) {
+          const idProv = filterProv[0].province_id;
+
+          const dataRegionCity = await fetch(`https://api.rajaongkir.com/starter/city?id=&province=${idProv}`, {
+            method: 'GET',
+            headers: { key: 'c2c121c370d4e8d81c15514667ed23da' }
+          });
+          const dataCity = await dataRegionCity.json();
+          
+          const dataResultCity = dataCity.rajaongkir.results;
+
+          const sellerCity = sellers[i]?.detailToko?.address?.subregion.replace("Kota ", "");
+          const filterCity = dataResultCity.filter((result) => result.city_name === sellerCity);
+
+          if (filterCity.length > 0) {
+            const cityId = filterCity[0].city_id;
+            newIdCityPenjual.push(cityId);
+          }
+        }
       }
     }
 
+    return newIdCityPenjual;
+  } catch (err) {
+    alert(e);
+    return [];
   }
+};
+
+    
+  const getOngkir = async (idCityPembeli, idCityPenjual) => {
+    alert(idCityPembeli, idCityPenjual)
+    const ongkirResults = [];
+    if(idCityPembeli[0] != "" && getIdCityPenjual[0] != ""){
+    for (const idPenjual of idCityPenjual) {
+      try {
+        const dataRegion = await fetch('https://api.rajaongkir.com/starter/cost', {
+          method: 'POST',
+          headers: {
+            key: 'c2c121c370d4e8d81c15514667ed23da',
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            origin: idPenjual,
+            destination: idCityPembeli,
+            weight: 1700,
+            courier: 'jne',
+          }).toString(),
+        });
+  
+        const data = await dataRegion.json();
+        
+        
+        // Assuming you want to save all ongkir results in the ongkirResults array
+        if (data.rajaongkir.results.length > 0) {
+          const ongkirResult = data.rajaongkir.results[0].costs[0];
+          ongkirResults.push(ongkirResult);
+        }
+      } catch (e) {
+        alert(e);
+      }
+    }
+    setOngkir(ongkirResults)
+  }
+  };
+
+  // get Distance
+  const getDistanceA = async (index) => {
+    // pembeli
+    const startLat = dataPembeli[0]?.addressCord?.coords?.latitude;
+    const startLon = dataPembeli[0]?.addressCord?.coords?.longitude;
+  
+    // penjual
+    const endLat = listDetail[0][index]?.detailToko?.addressCord?.coords?.latitude;
+    const endLon = listDetail[0][index]?.detailToko?.addressCord?.coords?.longitude;
+  
+    const apiKey = '5b3ce3597851110001cf6248bd0768f706814962a1fe5e4b91769469';
+    const getDistance = await fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${startLon},${startLat}&end=${endLon},${endLat}`)
+      .then(response => response.json())
+      .then(data => {
+        const distanceInKm = (data.features[0].properties.segments[0].distance / 1000).toFixed(1);
+        return parseFloat(distanceInKm); // Return the distance value as a number
+      })
+      .catch(error => {
+        console.error(error);
+        return null; // Return null in case of an error
+      });
+  
+    return getDistance; // Return the promise for use in Promise.all
+  };
+  
+  // Loop through the filter array and call getDistanceA for each item
+  const calculateDistances = async () => {
+    const ongkirArray = await Promise.all(listDetail[0]?.map((item, index) => getDistanceA(index)));
+    setDistance(ongkirArray.filter(value => value !== null)); // Set the entire array of distances
+    setOngkirD(ongkirArray.map(distance => {
+      if (distance <= 5.0) {
+        return "10000";
+      } else if (distance <= 10.0) {
+        return "15000";
+      } else if (distance <= 15.0) {
+        return "20000";
+      } else {
+        return "jauh";
+      }
+    })); // Set the ongkirD array based on distance values
+  };
+
+  const calculateTotalOngkir = () => {
+    let totalOngkir = 0;
+  
+    ongkir.forEach((item, index) => {
+      if (value[index] === 'one') {
+        totalOngkir += item.cost[0].value;
+      } else if (value[index] === 'two') {
+        totalOngkir += ongkirD[index] === 'jauh' ? 0 : parseInt(ongkirD[index]);
+      }
+    });
+  
+    return totalOngkir;
+  };
+  
+  const sumTotal = () => {
+    const totalJne = calculateTotalOngkir()
+    let total = 0;
+    listDetail[0]?.forEach((item, outerIndex) => {
+      item?.produk?.forEach((produkItem, innerIndex) => {
+        const miliValue = miliProduk[outerIndex][innerIndex] || "1";
+        const hargaProduk = miliValue === "1" ? produkItem.hargaProduk : produkItem[`hargaProduk${(miliValue-1)}`];
+        const stokProduk = Number(stok[outerIndex][innerIndex]) || 0;
+  
+        total += hargaProduk * stokProduk;
+      });
+    });
+    let totalK = total + totalJne
+    return totalK;
+  };
+
+  const currentDate = new Date();
+  const date = Timestamp.fromDate(currentDate);
+
+  const flattenArray = (arr) => {
+    return Array.isArray(arr) ? arr.flat() : arr;
+  };
+  
+  const handleUpload = async () => {
+    const stokValue = parseInt(stok);
+    const flattenedMiliProduk = flattenArray(miliProduk);
+    const flattenedStok = flattenArray(stok);
+  
+    if (stokValue >= 0) {
+      const docRef = collection(db, 'pesanan');
+      const totalOngkirList = [];
+  
+
+  
+      for (let index = 0; index < listDetail[0].length; index++) {
+        const miliArray = Array.isArray(miliProduk) ? miliProduk[index] : miliProduk; // Get the nested array for miliProduk
+        const stokArray = Array.isArray(stok) ? stok[index] : stok; 
+        
+        const pivot = parseInt(flattenedMiliProduk[index]) - 1;
+        const item = listDetail[0][index];
+        const stokProduk  = pivot === 0 ? item.produk[0].stokProduk : pivot === 1 ? item.produk.stokProduk1 : item.produk.stokProduk2
+        const selectedStokField = pivot === 0 ? 'stokProduk' : pivot === 1 ? 'stokProduk1' : 'stokProduk2';
+
+        
+
+        const pesananData = {
+          idPesanan: 'P' + new Date().getTime(),
+          userPembeli: auth?.currentUser?.uid,
+          userToko:item.produk[0].userUid,
+          produk: [], // Initialize an empty array to store the selected products
+          detailDataPenjual:[],
+          detailPembeli: dataPembeli[0],
+          jasaDataOngkir: [],
+          totalDataOngkir: [], 
+          totalOngkir: sumTotal(),
+          isCancel: false,
+          isCancel1: false,
+          isConfirm: false,
+          isConfirm1: false,
+          isDone: false,
+          resi: '',
+          namaAntar: '',
+          noAntar: '',
+          imgValid: fotoProduk,
+          detailAlamat: detailAlamat,
+          TglPembelian: date,
+        };
+
+        const detailDataPenjual = {
+          detailPenjual : {...item}
+        }
+        const jasaDataOngkir = {
+          jasaOngkir : value[index]
+        }
+       
+
+
+        for (let i = 0; i < item.produk.length; i++) {
+          const selectedStokField = pivot === 0 ? 'stokProduk' : pivot === 1 ? 'stokProduk1' : 'stokProduk2';
+          const stokProduk = item.produk[i][selectedStokField];
+          if (flattenedStok[index] >= 0  ) {
+            const hargaProduk = item?.produk[`hargaProduk${pivot === 0 ? '' : pivot + 1}`];
+            
+        
+            const hargaPerProduk = []
+        
+            for (let i = 0; i < miliArray.length; i++) {
+              const pivotInner = parseInt(miliArray[i]) - 1;
+              const pivotStok = parseInt(stokArray[i])
+              const selectedHarga = pivotInner === 0 ? 'hargaProduk' : pivotInner === 1 ? 'hargaProduk1' : 'hargaProduk2';
+              const selectedStok = pivotStok === 0 ? 'stokProduk' : pivotStok === 1 ? 'stokProduk1' : 'stokProduk2';
+              const stokIsi = item.produk[i][selectedStok]
+              const stokUpdate = stokIsi - flattenedStok[index];
+
+              const hargaProdukInner = item.produk[i][selectedHarga];
+              hargaPerProduk.push((parseInt(hargaProdukInner) * flattenedStok[index]) + (value[i] === 'one' ? parseInt(ongkir[index]?.cost[0]?.value) : parseInt(ongkirD[index])))
+              const jasaTotalOngkir = {
+                hargaOngkir : hargaPerProduk[i]
+            }
+              if (hargaPerProduk[i] !== undefined) {
+                pesananData.totalDataOngkir.push(jasaTotalOngkir);
+              }
+                if (item?.produk[i]?.idProduk) { // Check if the idProduk property is defined
+                  const updateUser = doc(db, 'produk', `${item?.produk[i]?.idProduk}`);
+                  console.log("isiStok", item?.produk[i]?.idProduk, selectedStokField, stokUpdate)
+                  await updateDoc(updateUser, { [selectedStokField]: stokUpdate });
+                }
+            }
+            
+            const produkData = {
+              stokBeli: stokArray[i],
+              miliBeli: miliArray[i],
+            };
+
+            pesananData.produk.push(produkData);
+
+          
+                
+        
+          } else {
+            alert(`Stok pada item ke-${index + 1} tidak mencukupi`);
+            return; // Exit the function if any stok is insufficient
+          }
+        }
+        const detailDataPenjualCopy = { ...detailDataPenjual };
+        pesananData.jasaDataOngkir.push(jasaDataOngkir)
+        pesananData.detailDataPenjual.push(detailDataPenjualCopy);
+        const pesananDataCopy = { ...pesananData };
+        pesananDataCopy.detailDataPenjual = [ ...pesananData.detailDataPenjual ];
+        
+        await setDoc(doc(docRef, `${pesananDataCopy.idPesanan}`), pesananDataCopy)
+        .then(() => {alert(`loading upload file ke-${index + 1}`)
+        
+  
+      })
+      .then(() => { alert(`loading upload file ke-${index + 1}`);
+      ;})
+        .catch((e) => {alert(e)})
+        pesananData.produk = [];
+        pesananData.detailDataPenjual = [];
+        pesananData.jasaDataOngkir = []; 
+      }
+      
+  
+     // Calculate totalOngkir for all products
+  
+      // Rest of the code after the loop
+      alert('Produk Berhasil DiBeli ;)');
+      navigation.navigate('Pesanan');
+    } else {
+      alert('Stok ada yang salah');
+    }
+  };
+  
+ 
+  
+  const handleReloadOngkir = () => {
+    // Fetch the ongkir values again
+    alert(`${JSON.stringify(idCityPenjual)}`)
+    fetchData();
+  };
+
+  const handleMiliChange = (outerIndex, miliValue, innerIndex) => {
+    setMiliProduk((prevMiliProduk) => {
+      const newMiliProduk = [...prevMiliProduk];
+      if (Array.isArray(newMiliProduk[outerIndex])) {
+        newMiliProduk[outerIndex][innerIndex] = miliValue;
+      } else {
+        newMiliProduk[outerIndex] = miliValue;
+      }
+      return newMiliProduk;
+    });
+  };
+
+  const handleStokChange = (outerIndex, stokValue, innerIndex) => {
+    setStok((prevStok) => {
+      const newStok = [...prevStok];
+      if (Array.isArray(newStok[outerIndex])) {
+        newStok[outerIndex][innerIndex] = stokValue;
+      } else {
+        newStok[outerIndex] = stokValue;
+      }
+      return newStok;
+    });
+  };
   return (
     <NativeBaseProvider>
     <SafeAreaView>
     <ScrollView>
       <Box p={4}>
         <Box backgroundColor="white" p={4} mt="3" rounded="md">
-          <Text bold> Alamat Tujuan:</Text>
+          <Text bold>Alamat Tujuan:</Text>
           <Text fontSize="xs">{dataPembeli[0]?.address?.city}, { dataPembeli[0]?.address?.district}, { dataPembeli[0]?.address?.street}, { dataPembeli[0]?.address?.region}, 
           kode post: {dataPembeli[0]?.address?.postalCode}</Text>
         </Box>
         <Box backgroundColor="white" p={4} mt="3" rounded="md">
-          <Text bold mb="1">{listDetail[0].detailToko.namaToko}</Text>
-          <Stack direction="row">
-            <Box>
-              <Image
-                source={{uri : listDetail[0].produk.imgProduk}}
-                width="70px"
-                height="70px"
-                alt='image produk'
-                rounded="md"
-              />
-            </Box>
-            <Box alignSelf="center" mx="4">
-              <Text>{listDetail[0].produk.namaProduk}</Text>
-              <Text bold fontSize="lg">RP {listDetail[0].produk.hargaProduk}</Text>
-              <Text>Stok : {listDetail[0].produk.stokProduk} </Text>
-            </Box>
-          </Stack>
+          <Text bold>Detail Alamat:</Text>
+          <Input 
+          placeholder="No 8 Perum Sentosa"
+          size="sm"
+          value={detailAlamat}
+          onChangeText= {text => setDetailAlamat(text)} />
         </Box>
 
-        <Box backgroundColor="white" p={4} mt="3" rounded="md">
-        <FormControl >
-                <FormControl.Label>Stok</FormControl.Label>
-                <Input placeholder="" keyboardType='numeric' 
+        {listDetail[0]?.map((item, outerIndex) => (
+        <Box key={outerIndex} backgroundColor="white" p={4} mt="3" rounded="md">
+          <Text fontWeight="bold" mb="1">
+            {item?.detailToko?.namaToko}
+          </Text>
+          {item?.produk?.map((produkItem, innerIndex) => (
+            <Box key={innerIndex}>
+              <Stack direction="row">
+                <Box>
+                  <Image
+                    src={produkItem?.imgProduk}
+                    width="70px"
+                    height="70px"
+                    alt="image produk"
+                    rounded="md"
+                  />
+                </Box>
+                <Box alignSelf="center" mx="4">
+                  <Text>{produkItem?.namaProduk}</Text>
+                  <Text fontWeight="bold" fontSize="lg">
+                    RP{" "}
+                    {miliProduk[outerIndex][innerIndex] - 1 > 0
+                      ? produkItem[`hargaProduk${(miliProduk[outerIndex][innerIndex] - 1)}`]
+                      : produkItem?.hargaProduk}
+                  </Text>
+                  <Text>
+                    Stok:{" "}
+                    {miliProduk[outerIndex][innerIndex] - 1 > 0
+                      ? produkItem[`stokProduk${(miliProduk[outerIndex][innerIndex] - 1)}`]
+                      : produkItem?.stokProduk}
+                  </Text>
+                </Box>
+              </Stack>
+
+              <Box backgroundColor="white" p={4} mt="3" rounded="md">
+                <FormControl>
+                  <FormControl.Label>Pilih Mili</FormControl.Label>
+                  <Radio.Group
+                    name={`exampleGroup-${outerIndex}-${innerIndex}`}
+                    accessibilityLabel="pick a size"
+                    value={Array.isArray(miliProduk[outerIndex]) ? miliProduk[outerIndex][innerIndex] || "1" : miliProduk[outerIndex] || "1"}
+                    onChange={(nextValue) => handleMiliChange(outerIndex, nextValue, innerIndex)}
+                  >
+                    <Stack
+                      direction={{
+                        base: "column",
+                        md: "row"
+                      }}
+                      alignItems={{
+                        base: "flex-start",
+                      }}
+                      space={4}
+                      w="75%"
+                      maxW="300px"
+                    >
+                      <Radio value="1" colorScheme="yellow" size="sm" my={1}>
+                        {produkItem?.miliProduk}|mili
+                      </Radio>
+                      <Radio value="2" colorScheme="yellow" size="sm" my={1}>
+                        {produkItem?.miliProduk1}|mili
+                      </Radio>
+                      <Radio value="3" colorScheme="yellow" size="sm" my={1}>
+                        {produkItem?.miliProduk2}|mili
+                      </Radio>
+                    </Stack>
+                  </Radio.Group>
+                </FormControl>
+              </Box>
+
+              <Box backgroundColor="white" p={4} mt="3" rounded="md">
+                <Center>
+                  Produk terpilih:{" "}
+                  {miliProduk[outerIndex][innerIndex] - 1 > 0
+                    ? produkItem[`miliProduk${(miliProduk[outerIndex][innerIndex] - 1)}`]
+                    : produkItem?.miliProduk}{" "}
+                  mil
+                </Center>
+                <FormControl>
+                  <FormControl.Label>Stok</FormControl.Label>
+                  <Input
+                    placeholder=""
+                    keyboardType="numeric"
                     type="text"
-                    value={stok}
-                    onChangeText= {text => setStok(text)}
-                />
-              </FormControl>
-        </Box>
-        <Box alignItems="center">
-        {listDetail[0].detailToko.isSiantar == true && dataPembeli[0]?.isSiantar == true
-        ? 
-        <Box>
-        <Radio.Group name="myRadioGroup" accessibilityLabel="favorite number" value={value} onChange={nextValue => {
-          setValue(nextValue);
-        }}>
-            <Radio value="one" my={1} colorScheme="yellow">
-            <Box backgroundColor="white" p={4} mt="3" rounded="md" >
-              <Text bold> Pengiriman</Text>
-              <Text > Ekspedisi : <Text bold> JNE</Text></Text>
-              <Text > Estimasi : <Text bold> {ongkir?.cost[0]?.etd} Hari</Text></Text>
-              <Text bold fontSize="lg"> Rp. {ongkir?.cost[0]?.value}</Text>
+                    value={Array.isArray(stok[outerIndex]) ? stok[outerIndex][innerIndex] || "" : stok[outerIndex] || ""}
+                    onChangeText={(text) => handleStokChange(outerIndex, text, innerIndex)}
+                  />
+                </FormControl>
+              </Box>
             </Box>
-            </Radio>
-            <Radio value="two" my={1} colorScheme="yellow">
-            <Box backgroundColor="white" p={4} mt="3" rounded="md">
-              <Text> Pemantang Siantar</Text>
-            <Text > Jarak : <Text bold> {distance} KM</Text></Text>
-              <Text bold fontSize="lg"> RP. {ongkirD}</Text>
-            </Box>
-            </Radio>
-        </Radio.Group>
+          ))}
         </Box>
-        :
-        <Box backgroundColor="white" p={4} mt="3" rounded="md" >
-              <Text bold> Pengiriman</Text>
-              <Text > Ekspedisi : <Text bold> JNE</Text></Text>
-              <Text > Estimasi : <Text bold> {ongkir?.cost[0]?.etd} Hari</Text></Text>
-              <Text bold fontSize="lg"> Rp. {ongkir?.cost[0]?.value}</Text>
-          </Box>
+      ))}
 
-        }
         
-        </Box>
+      {ongkir.map((ongkirData, index) => (
+  <React.Fragment key={index}>
+    {distance[index] <= 15 ? (
+      <Box key={index}>
+        <Radio.Group
+          name="myRadioGroup"
+          accessibilityLabel="favorite number"
+          value={value}
+          onChange={(nextValue) => {
+            setValue(nextValue);
+          }}
+        >
+          <Radio value="one" my={1} colorScheme="yellow">
+            <Box backgroundColor="white" p={4} mt="3" rounded="md">
+              <Text bold> Pengiriman</Text>
+              <Text> Ekspedisi : <Text bold> JNE</Text></Text>
+              <Text> Estimasi : <Text bold> {ongkirData.cost[0].etd} Hari</Text></Text>
+              <Text bold fontSize="lg"> Rp. {ongkirData.cost[0].value}</Text>
+            </Box>
+          </Radio>
+          <Radio value="two" my={1} colorScheme="yellow">
+            <Box backgroundColor="white" p={4} mt="3" rounded="md">
+              <Text> Dibawah 10 KM</Text>
+              <Text> Jarak : <Text bold> {distance[index]} KM</Text></Text>
+              <Text bold fontSize="lg"> RP. {ongkirD[index]}</Text>
+            </Box>
+          </Radio>
+        </Radio.Group>
+      </Box>
+    ) : (
+      <Box key={index} backgroundColor="white" p={4} mt="3" rounded="md">
+        <Text bold> Pengiriman</Text>
+        <Text> Ekspedisi : <Text bold> JNE</Text></Text>
+        <Text> Estimasi : <Text bold> {ongkirData.cost[0].etd} Hari</Text></Text>
+        <Text bold fontSize="lg"> Rp. {ongkirData.cost[0].value}</Text>
+      </Box>
+    )}
+  </React.Fragment>
+))}
+
+
         <Box backgroundColor="white" p={4} mt="3" rounded="md">
           <Text bold> Pembayaran</Text>
           <Text > Total Pembayaran</Text>
@@ -409,7 +705,7 @@ const FormPembelian = ({route, navigation}) => {
           <Text bold mt={3}> Bank BCA</Text>
           <Text> No Rek  : 124123124123</Text>
           <Text> A/N        : Admin</Text>
-        </Box>
+        </Box> 
         <Box backgroundColor="white" p={4} mt="3" rounded="md">
         
         
@@ -432,6 +728,9 @@ const FormPembelian = ({route, navigation}) => {
 
         <Stack direction="row" alignSelf="flex-end" mt="4">
         <Box>
+        <Button size="sm" colorScheme="yellow" onPress={handleReloadOngkir}>Reload Ongkir</Button>
+        </Box>
+        <Box>
         <Button size="sm" colorScheme="red" variant="outline"
         onPress={() =>{
             navigation.navigate('Keranjang')}}
@@ -439,6 +738,7 @@ const FormPembelian = ({route, navigation}) => {
         </Box>
         <Box px={2}>
         <Button size="sm" colorScheme="green" onPress={handleUpload} >Buy</Button>
+        
         </Box>
 
         </Stack>
@@ -447,7 +747,7 @@ const FormPembelian = ({route, navigation}) => {
 
 
     </ScrollView>
-    </SafeAreaView>
+    </SafeAreaView> 
     </NativeBaseProvider>
   )
 }

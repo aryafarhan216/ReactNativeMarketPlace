@@ -1,14 +1,21 @@
 
 import React, { useEffect, useState } from 'react'
 import { useIsFocused } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 // Firebase
-import { db} from "../../firebase";
+import { db, storage} from "../../firebase";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { collection,  where, onSnapshot, query, doc, updateDoc } from "firebase/firestore";
 import { HStack, NativeBaseProvider, ScrollView, Box, Divider, Text,Modal, Image, Button, Pressable, Center, VStack } from 'native-base';
 
-const PesananBerhasil = () => {
+const Batal = () => {
   const [data, setData] = useState([null])
   const [showModal,setShowModal] = useState(false)
+  // image
+  const [fotoProduk, setFotoProduk] = useState(null)
+  const [image, setImage] = useState(null)
+  const [image1, setImage1] = useState(null)
+  const [selectedProductIndex, setSelectedProductIndex] = useState(0)
 
   const [dataModal, setDataModal] = useState({
     idPesanan:"",
@@ -23,6 +30,7 @@ const PesananBerhasil = () => {
     // pembeli
     namaPembeli:"",
     noHpPembeli:"",
+    stokBeli : "",
     // penjual
     namaToko:"",
     rekening:"",
@@ -31,11 +39,10 @@ const PesananBerhasil = () => {
 
   })
   const focus = useIsFocused()
-  console.log("test")
   useEffect(()=>{
     if(focus){
       let userRef = collection(db,"pesanan")
-      let q = query(userRef, where("isDone", "==", true))
+      let q = query(userRef, where("isCancel", "==", true))
       // realtime
       const realData  = onSnapshot(q,
         (snapShot) =>{
@@ -50,13 +57,108 @@ const PesananBerhasil = () => {
           console.log(error)
         }
       )
+
+      // Upload image
+      console.log("masuk focus")
+      // upload image
+      const blobImage = async() =>{
+        console.log("masukBlob")
+        const blob = await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.onload = function () {
+            resolve(xhr.response);
+          };
+          xhr.onerror = function (e) {
+            console.log(e);
+            reject(new TypeError("Network request failed"));
+          };
+          xhr.responseType = "blob";
+          xhr.open("GET", image, true);
+          xhr.send(null);
+          
+        });
+  
+  
+        return uploadImage(blob)
+      }
+      const uploadImage = (blob) =>{
+        let name = "validatonAdmin/" + "|"+new Date().getTime()
+        const storageRef = ref(storage, 'images/' + name);
+        const uploadTask = uploadBytesResumable(storageRef, blob);
+      // Listen for state changes, errors, and completion of the upload.
+        uploadTask.on(
+          'state_changed',  
+          (snapshot) => {
+            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log('Upload is ' + progress + '% done');
+            switch (snapshot.state) {
+              case 'paused':
+                console.log('Upload is paused');
+                break;
+              case 'running':
+                console.log('Upload is running');
+                break;
+            }
+          }, 
+          (error) => {
+            switch (error.code) {
+              case 'storage/unauthorized':
+                alert(error)
+                break;
+              case 'storage/canceled':
+                alert(error)
+                break;
+              case 'storage/unknown':
+                alert(error)
+                break;
+            }
+          }, 
+          () => {
+            // Upload completed successfully, now we can get the download URL
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              setFotoProduk(downloadURL)
+              blob.close();
+            });
+          }
+        );
+        
+      }
+      image && blobImage();
       return () =>{
         realData()
       }
     }
-  }, [])
+  }, [image])
 
-  const [selectedProductIndex, setSelectedProductIndex] = useState(0)
+  // agar hilang di pesanan
+  const handleStatus = async(idPesanan) =>{
+    console.log(idPesanan)
+    const updateUser = doc(db, "pesanan",`${idPesanan}`)
+    await updateDoc(updateUser, {
+      isCancel1: true,
+      imgValidAdmin: fotoProduk
+    }).then(()=>{
+      
+      alert("Terkonfirmasi")
+    })
+    .catch((err) => alert(err))
+    setImage(null)
+  }
+
+  const pickImage = async () =>{
+    console.log("masuk foto")
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if(!result.canceled){
+      setImage(result.assets[0].uri)
+    }
+  }
   const getTotalOngkirSum = () => {
     const produkData = dataModal?.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk;
     const totalOngkirData = dataModal?.pesanan?.totalDataOngkir;
@@ -168,7 +270,7 @@ const PesananBerhasil = () => {
     </ScrollView>
      {/* Modal */}
   <Center>
-    <Modal isOpen={showModal} onClose={() => setShowModal(false)} ScrollView>
+    <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
       <Modal.Content maxWidth="400px">
         <Modal.CloseButton />
         <Modal.Header>Detail Pesanan {dataModal?.idPesanan}</Modal.Header>
@@ -252,74 +354,123 @@ const PesananBerhasil = () => {
       <Text>No Rekening : {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.detailToko.bank.noRekening}</Text>
       <Text>Atas Nama    : {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.detailToko.bank.atasNama}</Text>
     </Box>
-        </VStack>
-        <Divider my="2"/>
-        {/* detail pembeli */}
-        <VStack>
-         <Box>
-         <Text mb="2" bold>Detail Pembeli:</Text>
-            <HStack space={3}>
-              <Box pt="2">
-              <Image 
-                source={{uri : dataModal?.imgBukti}}
-                size="xl"
-                alt='foto'
-                rounded="sm"
-                />
-              </Box>
-              <Box>
-              <VStack space={0}>
-              <Box>
-              <Text fontSize="lg">
-                {dataModal?.namaPembeli}
+      </VStack>
+      <Divider my="2"/>
+      {/* detail pembeli */}
+      <VStack>
+       <Box>
+       <Text mb="2" bold>Detail Pembeli:</Text>
+          <HStack space={3}>
+            <Box pt="2">
+            <Image 
+              source={{uri : dataModal?.imgBukti}}
+              size="xl"
+              alt='foto'
+              rounded="sm"
+              />
+            </Box>
+            <Box>
+            <VStack space={0}>
+            <Box>
+            <Text fontSize="lg">
+              {dataModal?.namaPembeli}
+            </Text>
+            </Box>
+              <Box >
+              <Text>
+              {dataModal?.noHpPembeli}
+              </Text>
+            </Box>
+              <Box >
+   
+
+              <Text bold  fontSize="sm">
+               Total Pembayaran:
+              </Text>
+              <Text bold  fontSize="sm">
+               RP. {dataModal?.totalOngkir}
               </Text>
               </Box>
               <Box >
-                <Text fontSize="sm">
-                {dataModal?.noHpPembeli}
-                </Text>
-              </Box>
-              <Box >
-
-                <Text bold color="#EFAF00" fontSize="sm">
-                  RP. {dataModal?.totalOngkir}
-                </Text>
-                </Box>
-                <Box >
-                <Text fontSize="xs">
-                  { dataModal?.jasaOngkir ==="one"
-                  ? <Text>Kurir : JNE</Text>
-                  : <Text>Diantar</Text>
-                  }
-                </Text>
-              </Box>
-              </VStack>
-              </Box>
-            </HStack>
-            <Box>
+              <Text fontSize="xs">
+                { dataModal?.jasaOngkir ==="one"
+                ? <Text>Kurir : JNE</Text>
+                : <Text>Diantar</Text>
+                }
+              </Text>
             </Box>
+            </VStack>
+            </Box>
+          </HStack>
+          <Box>
+          </Box>
+          <Divider my="2"/>
+      <Box>
+      <Text>Rekening       : {dataModal?.rekeningP}</Text>
+      <Text>No Rekening : {dataModal?.noRekeningP}</Text>
+      <Text>Atas Nama    : {dataModal?.atasNamaP}</Text>
+    </Box>
+      </Box>
+      <Box backgroundColor="white" p={4} mt="3" rounded="md">
+        
+        { dataModal.pesanan?.imgValidAdmin === ''
+        ?
+        <Box>
+        {image && 
+          <Center my='3'>
+        <Text>Foto Bukti Transfer</Text>
+        <Image source={{ uri: image }} style={{ width: 200, height: 200 }} alt="Fotobukti"/>
+        </Center>
+        }
+        
+        <Text bold> Upload Bukti Transfer</Text>
+        <Button onPress={pickImage}>
+        upload
+        </Button>
         </Box>
-        <Divider my="2"/>
-        <Text mt="2">Bukti Admin</Text>
-        <Box pt="2">
-              <Image 
-                source={{uri : dataModal?.imgAdmin}}
-                size="2xl"
-                alt='foto'
-                rounded="sm"
-                />
-              </Box>
+        :
+        <Box>
+        <Center my='3'>
+        <Text>Foto Bukti Transfer</Text>
+        <Image source={{ uri: dataModal.pesanan?.imgValidAdmin }} style={{ width: 200, height: 200 }} alt="Fotobukti"/>
+        </Center>
+        </Box>
+        }
+        
+       
 
-              <Text mt="2">Pesanan Selesai</Text>
-        </VStack>
-          </Modal.Body>
+         
+      </Box>
+      </VStack>
+        </Modal.Body>
           <Modal.Footer>
             <Button.Group space={2}>
               <Button variant="ghost" colorScheme="blueGray" onPress={() => {
               setShowModal(false);
             }}>
-                Close
+                Cancel
               </Button>
+              {dataModal.pesanan?.isCancel1 
+              ?
+              <Button variant="ghost" colorScheme="blueGray" onPress={() => {
+              setShowModal(false);
+            }}>
+                Okay
+              </Button>
+              :
+              <Button onPress={() => {
+              if(image){
+                setShowModal(false);
+              handleStatus(dataModal.idPesanan);
+              }else{
+                alert("bukti tranfer belom diupload")
+              }
+              
+            }} colorScheme="yellow">
+                Done
+              </Button>
+              }
+
             </Button.Group>
           </Modal.Footer>
         </Modal.Content>
@@ -329,4 +480,4 @@ const PesananBerhasil = () => {
   )
 }
 
-export default PesananBerhasil
+export default Batal

@@ -11,6 +11,7 @@ import DataUser from "../Admin/DataUser";
 import KonfirmasiPesanan from "../Admin/KonfirmasiPesanan";
 import PesananBerhasil from "../Admin/PesananBerhasil";
 import PesananSelesai from "../Admin/PesananSelesai";
+import Batal from "../Admin/Batal";
 
 
 const Tab = createBottomTabNavigator();
@@ -40,6 +41,14 @@ const BottomNavAdmin = () => {
       <Tab.Screen name="Konfirmasi Pesanan" component={KonfirmasiPesanan} 
             options={{
             tabBarLabel:"Konfirmasi",
+            tabBarIcon:({color, size}) => (
+              <MaterialIcons name="pending-actions" size={24} color="#EFAF00" />
+            )
+        }}
+      />
+        <Tab.Screen name="Batal" component={Batal} 
+            options={{
+            tabBarLabel:"Batal",
             tabBarIcon:({color, size}) => (
               <MaterialIcons name="pending-actions" size={24} color="#EFAF00" />
             )

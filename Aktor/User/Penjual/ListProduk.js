@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { NativeBaseProvider, ScrollView, Box, Text, VStack, HStack,
+import { NativeBaseProvider, ScrollView, Box, Text, VStack, HStack, Button,
  Center, Image, Pressable } from 'native-base'
 import { auth, db } from "../../../firebase";
 import { collection,  where,doc, deleteDoc, onSnapshot, query } from "firebase/firestore";
@@ -9,7 +9,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 const img = require('../../../assets/src/DrawKit-Vector-Illustration-ecommerce-17.png')
 
-const ListProduk = () => {
+const ListProduk = ({navigation}) => {
   const [data, setData] = useState([null])
   const focus = useIsFocused()
 
@@ -45,6 +45,10 @@ const ListProduk = () => {
       alert(e)
     }
   }
+
+  const handleEdit = (id) =>{
+    console.log(id)
+  }
   console.log("isi", data)
 
   return (
@@ -58,9 +62,23 @@ const ListProduk = () => {
         </Center>
       : 
       <Box>
+
     {data?.map((data, index) =>{
           return(
+            <Pressable
+                    key={index}
+                    onPress={() =>
+                      navigation.navigate('EditProduk', {
+                        detailProduk: data,
+                      })
+                    }
+                  >
+           
+            
             <Box bg="white" rounded="xl" p="5" mt="4" mx="5" key={index}>
+                            <Box alignSelf="flex-end">
+                <Ionicons name="trash-bin-outline" size={15} color="black" onPress={() => handleDelete(data.idProduk)}/>
+                </Box>
             <VStack>
             <Box>
                 <HStack space={3}>
@@ -83,7 +101,8 @@ const ListProduk = () => {
                   </Box>
                     <Box >
                     <Text bold color="#EFAF00" fontSize="sm">
-                      RP. {data?.hargaProduk}
+
+                      RP. {data?.hargaProduk} - {data?.hargaProduk2 ? <Text>{data?.hargaProduk2}</Text> : <Text>{data?.hargaProduk1}</Text>} 
                     </Text>
                     </Box>
 
@@ -123,16 +142,23 @@ const ListProduk = () => {
                       {data?.descProduk}
                     </Text>
                 </Box>
-                <Box alignSelf="flex-end">
-                <Ionicons name="trash-bin-outline" size={15} color="black" onPress={() => handleDelete(data.idProduk)}/>
+                <HStack alignSelf="flex-end" space={3}>
+                <Box >
+                {/* <Button size="sm" onPress={handleEdit(data?.idProduk)}>Edit Produk</Button> */}
                 </Box>
+
+                </HStack>
+               
             </Box>
           
             </VStack>
             </Box>
+            </Pressable>
           )})}
+          
     </Box>
       }
+     
    
 
       </ScrollView>

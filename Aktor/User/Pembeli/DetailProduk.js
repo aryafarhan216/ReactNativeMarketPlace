@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Image, Box, NativeBaseProvider, Divider, Text, Stack, Button, VStack, HStack, ScrollView} from 'native-base'
+import { Image, Box, NativeBaseProvider, Divider, Text, Stack, Button, HStack, ScrollView, Select} from 'native-base'
 import { Ionicons } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 const img = require('../../../assets/src/DrawKit-Vector-Illustration-ecommerce-15.png')
 import { auth, db } from "../../../firebase";
 import { collection,  where,doc, deleteDoc, onSnapshot, getDoc, setDoc } from "firebase/firestore";
+import { Entypo } from '@expo/vector-icons';
 
 const DetailProduk = ({route, navigation}) => {
     const [dataDetail, setDataDetail] = useState({})
@@ -70,7 +71,7 @@ const DetailProduk = ({route, navigation}) => {
             detailToko : dataDetail,
             produk : detailProduk
         }).then(() => {
-            alert("Produk Masuk Ke Wishlist")
+            alert("Produk Masuk Ke Keranjang")
         }).catch((e) =>{
             alert(e)
         })
@@ -91,7 +92,7 @@ const DetailProduk = ({route, navigation}) => {
 
     const handleBuy =  () =>{
         navigation.navigate('FormPembelian', {
-            detailPembelian : dataBeli
+              detailPembelian : [dataBeli]
             })
     }
     console.log("data detail", dataBeli)
@@ -110,12 +111,12 @@ const DetailProduk = ({route, navigation}) => {
                 />
                 </Box>
                 <Box py="3">
-                    <Text bold fontSize="xl" color="#EFAF00" m="0" p="0"> Rp {detailProduk.hargaProduk} </Text>
+                    <Text bold fontSize="xl" color="#EFAF00" m="0" p="0"> Rp {detailProduk.hargaProduk} / Rp {detailProduk.hargaProduk1} / Rp {detailProduk.hargaProduk2}</Text>
                     <Text bold fontSize="lg"> {detailProduk.namaProduk}</Text>
                     <HStack>
                     <Box>
                             <Text> Toko : {dataDetail.namaToko} </Text>
-                            <Text> Stok : {detailProduk.stokProduk}</Text>
+                            <Text> Stok : {detailProduk.stokProduk} ({detailProduk.miliProduk}ml) / {detailProduk.stokProduk1} ({detailProduk.miliProduk1}ml) / {detailProduk.stokProduk2} ({detailProduk.miliProduk2}ml)</Text>
                         </Box>
                     </HStack>
                 </Box>
@@ -132,7 +133,6 @@ const DetailProduk = ({route, navigation}) => {
                             </Box>
                             <Box>
                                 <Text> Umur : {detailProduk.umurProduk}</Text>
-                                <Text> Ukuran : {detailProduk.miliProduk} ml</Text>
                             </Box>
                         </HStack>
 
@@ -147,7 +147,7 @@ const DetailProduk = ({route, navigation}) => {
                 <Stack direction="row" alignSelf="flex-end" space={2} my="3">
 
                 <Button size="sm" variant="outline">
-                <Ionicons name="heart" size={24} color="#EFAF00"onPress={handleWishlist} />
+                <Entypo name="shopping-cart" size={24} color="#EFAF00" onPress={handleWishlist} />
                 </Button>
                 <Button size="sm" variant="outline">
                 <Ionicons name="chatbox" size={24} onPress={addList} color="#EFAF00"/>

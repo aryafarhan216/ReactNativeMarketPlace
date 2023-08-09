@@ -14,6 +14,7 @@ import auth from '@react-native-firebase/auth';
 const WishlistGoogle = ({navigation}) => {
   const [data, setData] = useState([null])
   const focus = useIsFocused()
+  const [filteredCart, setFilteredCart] = useState(null);
 
     useEffect(() =>{
       if (focus === true){
@@ -39,29 +40,69 @@ const WishlistGoogle = ({navigation}) => {
         }
       }
 
-    }, [])
+    }, [focus])
 
-    const handleDelete = async(id) =>{
-      console.log("msujk")
-      try{
-        await deleteDoc(doc(db, "wishlist", `${id}`));
-      } catch(e){
-        alert(e)
+    useEffect(() => {
+      // Check if all elements in the `data` array are not null
+      const isDataAvailable = data.every((item) => item !== null);
+    
+      if (isDataAvailable) {
+        const filteredData = data.reduce((acc, item) => {
+          if (item.produk) {
+            const existingProduct = acc.find((accItem) => accItem.produk[0]?.userUid === item.produk.userUid);
+            if (existingProduct) {
+              existingProduct.produk.push(item.produk);
+            } else {
+              acc.push({ ...item, produk: [item.produk] });
+            }
+          }
+          return acc;
+        }, []);
+        setFilteredCart(filteredData);
       }
-    }
-
-    console.log("cart", data[0]?.detailToko.namaToko)
+    }, [data]);
+    
+    const handleDelete = async (id) => {
+      console.log("masuk");
+      try {
+        await deleteDoc(doc(db, "wishlist", `${id}`));
+      } catch (e) {
+        alert(e);
+      }
+    };
+    const dataLength = data?.length;
+    console.log("isi filter cart", filteredCart)
+    
   return (
     <NativeBaseProvider>
     <SafeAreaView>
       <ScrollView>
-
+{/* Baru */}
+<Pressable onPress={() =>{
+          navigation.navigate('FormPembelianGoogle', {
+            detailPembelian : filteredCart
+          })
+        }}>
+        <Box bg="white" rounded="xl" p="5" mt="4" mx="5" >
+          <VStack>
+          <Box>
+          <Text bold fontSize="md" mb="1">
+            Total Keranjang: {dataLength}
+          </Text>
+          </Box>
+          <Box>
+            
+          </Box>
+          </VStack>
+          </Box>
+        </Pressable>
+      {/* end of baru */}
       {/* Wishlist */}
       {data?.map((data, index) =>{
         return(
           <Pressable onPress={() =>{
-            navigation.navigate('FormPembelian', {
-              detailPembelian : data
+            navigation.navigate('FormPembelianGoogle', {
+              detailPembelian : [data]
             })
           }} key={index}>
           <Box bg="white" rounded="xl" p="5" mt="4" mx="5" key={index}>

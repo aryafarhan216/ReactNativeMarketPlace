@@ -34,6 +34,9 @@ const SignUp = ({navigation}) => {
                 emailId: email,
                 noHp: hp,
                 address:"",
+                rekening : "",
+                noRekening : "",
+                atasNama: "",
                 seller:false,
                 isSiantar:false,
                 timestamp: serverTimestamp()

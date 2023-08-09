@@ -40,7 +40,13 @@ export default function LoginGoogle ({navigation}){
             await setDoc(doc(db, "user", uid), {
                 emailId: email,
                 seller:false,
-                isGoogle:true
+                isGoogle:true,
+                rekening : "",
+                noRekening : "",
+                atasNama: "",
+                noHp:"",
+                isSiantar:false,
+                address:""
               });
         }
            

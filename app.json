@@ -12,7 +12,6 @@
     "name": "sbc",
     "slug": "sbc",
     "version": "1.0.2",
-    "runtimeVersion": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,6 +19,9 @@
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     },
     "updates": {
       "fallbackToCacheTimeout": 0,
@@ -48,7 +50,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "e096063f-44f5-4b86-b357-5bbd46314d3f"
+        "projectId": "ab23232f-3c6d-400c-93d2-786551201bec"
       }
     }
   }

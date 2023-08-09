@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { db} from "../../../firebase";
 import { doc, getDoc, updateDoc} from "firebase/firestore";
-import { Center, ScrollView, Box, NativeBaseProvider, FormControl, Input, Divider, 
+import { Center, ScrollView, Box, NativeBaseProvider, FormControl, Input, Divider, Select, CheckIcon,
   Button, TextArea, Checkbox, HStack, Text } from 'native-base'
 import * as Location from 'expo-location';
 import { useIsFocused } from '@react-navigation/native';
@@ -15,6 +15,9 @@ const ProfilPembeliGoogle = ({navigation}) => {
   const [dataUser, setDataUser] = useState([null])
   const [nama, setNama] = useState("")
   const [hp, setHp] = useState("")
+  const [rek, setRek] = useState("");
+  const [atasNama, setAtasNama] = useState("");
+  const [service, setService] = useState("");
   // map
   const [location, setLocation] = useState(null);
   const [mapLocation, setMapLocation] = useState({});
@@ -37,7 +40,7 @@ const ProfilPembeliGoogle = ({navigation}) => {
       }
       dataUser && getData()
     }
-  },[])
+  },[dataUser])
 
   const handleMap = async() =>{
     console.log("masuk handle map")
@@ -56,10 +59,9 @@ const ProfilPembeliGoogle = ({navigation}) => {
       longitude: location.coords.longitude,
       latitude: location.coords.latitude
     })
-
-    console.log("isi status", dataLocation)
     
     setMapLocation(dataLocation)
+    alert("Map sudah update")
   }
 
 
@@ -79,12 +81,15 @@ const ProfilPembeliGoogle = ({navigation}) => {
         noHp:hp,
         isSiantar : isSiantar,
         addressCord: location,
+        rekening : service,
+        noRekening : rek,
+        atasNama: atasNama,
         address: mapLocation[0]
       }).catch((err) => alert(err))
       alert("sudah terupdate")
   }
   GoogleSignin.configure({
-    webClientId: '676594783389-071d1dcan0maqledg5apv9c7kq1dmsci.apps.googleusercontent.com',
+    webClientId: '676594783389-1tm54n58tiktprt27m5c234qf0th3hl2.apps.googleusercontent.com',
   });
   const handleLogOut = async () =>{
       await GoogleSignin.revokeAccess();
@@ -104,8 +109,8 @@ const ProfilPembeliGoogle = ({navigation}) => {
           </Center>
           </Box>
           {/* Data Diri */}
-          <Box>
-            <FormControl>
+          <Box>            
+          <FormControl>
               <FormControl.Label>Nama</FormControl.Label>
               {dataUser?.nama === ""
               ?<Input placeholder='Nama masih kosong' 
@@ -134,18 +139,69 @@ const ProfilPembeliGoogle = ({navigation}) => {
             />
               }
             </FormControl>
-            <Divider />
+            <FormControl>
+                <FormControl.Label>Bank Digunakan </FormControl.Label>
+                <Select selectedValue={service} minWidth="200" accessibilityLabel="Choose Your Zodiak" placeholder="Choose Service" _selectedItem={{
+                bg: "teal.600",
+                endIcon: <CheckIcon size="5" />
+              }} mt={1} onValueChange={itemValue => setService(itemValue)}>
+                  <Select.Item label="BCA" value="BCA" />
+                  <Select.Item label="Mandiri" value="Mandiri" />
+                </Select>
+                </FormControl>
+
+                <FormControl>
+                <FormControl.Label>No Rekening</FormControl.Label>
+                {dataUser?.noRekening === "" 
+                ?
+                <Input keyboardType="numeric"
+                placeholder=""
+                value={rek}
+                onChangeText= {text => setRek(text)}
+                />
+                :
+                <Input keyboardType="numeric"
+                placeholder={dataUser?.noRekening}
+                value={rek}
+                onChangeText= {text => setRek(text)}/>
+                }
+        </FormControl>
+        <FormControl >
+        <FormControl.Label >Atas Nama </FormControl.Label>
+        { dataUser?.atasNama === ""
+        ?
+        <Input 
+                placeholder=""
+                value={atasNama}
+                onChangeText= {text => setAtasNama(text)}
+              />
+        :
+        <Input 
+                placeholder={dataUser?.atasNama}
+                value={atasNama}
+                onChangeText= {text => setAtasNama(text)}
+              />
+        }
+              
+            
+            </FormControl>
+            <Divider mt="3"/>
+
+            <FormControl isDisabled>
+              <FormControl.Label >No Handphone</FormControl.Label>
+              <Input placeholder={dataUser.noHp}/>
+            </FormControl>
             <FormControl isDisabled>
               <FormControl.Label>Email</FormControl.Label>
-              <Input placeholder={dataUser?.emailId}/>
+              <Input placeholder={dataUser.emailId}/>
             </FormControl>
-            <Divider />
+            <Divider mt="4"/>
             <FormControl>
               <FormControl.Label>Alamat</FormControl.Label>
               <Button size="sm" variant="subtle" colorScheme="yellow" mb="2" onPress={handleMap}>
                 Open Map
               </Button>
-              {dataUser?.address === ""
+              {dataUser.address === ""
               ?
               <TextArea aria-label="t1Disabled" 
                placeholder={`${mapLocation[0]?.district}, ${mapLocation[0]?.street}, ${mapLocation[0]?.city},${mapLocation[0]?.subregion}, ${mapLocation[0]?.country}`} 
@@ -167,16 +223,18 @@ const ProfilPembeliGoogle = ({navigation}) => {
               </Box>
             </HStack>
             
+            <Divider mt="2"/>
           </Box>
           <Button size="sm" colorScheme="yellow" mt="3" onPress={handleUpdate}>Update Profil</Button>
         </Box>
         <Box alignItems="center">
         <Button size="sm" colorScheme="red" my="3" onPress={handleLogOut}>Log Out</Button>
-        </Box>  
+        </Box>
       </ScrollView>
     </SafeAreaView>
     </NativeBaseProvider>
   )
+  
 }
 
 export default ProfilPembeliGoogle

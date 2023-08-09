@@ -6,7 +6,7 @@ import { useIsFocused } from '@react-navigation/native';
 import {  db } from "../../../firebase";
 import { collection,  where,doc, deleteDoc, onSnapshot, getDoc, setDoc } from "firebase/firestore";
 import auth from '@react-native-firebase/auth';
-
+import { Entypo } from '@expo/vector-icons';
 const DetailProdukGoogle = ({route, navigation}) => {
     const [dataDetail, setDataDetail] = useState({})
     const [dataPembeli, setDataPembeli] = useState({})
@@ -16,41 +16,51 @@ const DetailProdukGoogle = ({route, navigation}) => {
         detailToko : "",
         produk : ""
     })
-    const focus = useIsFocused()
+  
+    const focus = useIsFocused();
 
-    useEffect(() =>{
-        console.log("masuk list")
+    useEffect(() => {
+        console.log('masuk list');
         // realtime
-        const getUser = async () =>{
-                const docRef = doc(db, "user", detailProduk.userUid)
-                const docSnap = await getDoc(docRef)
-                if (docSnap.exists()) {
-                    setDataDetail(docSnap.data())
-                    setDataBeli({
-                        userUid : auth().currentUser?.uid,
-                        detailToko : docSnap.data(),
-                        produk : detailProduk
-                    })
-                
-                } else {
-                    // doc.data() will be undefined in this case
-                    console.log("No such document!");
-                }
+        if (focus) {
+          const getUser = async () => {
+            try {
+              const docRef = doc(db, 'user', detailProduk.userUid);
+              const docSnap = await getDoc(docRef);
+              if (docSnap.exists()) {
+                setDataDetail(docSnap.data());
+                setDataBeli((prevDataBeli) => ({
+                  ...prevDataBeli,
+                  userUid: auth().currentUser?.uid,
+                  detailToko: docSnap.data(),
+                  produk: detailProduk,
+                }));
+              } else {
+                console.log('No such document!');
+              }
+            } catch (error) {
+              console.error('Error fetching user data:', error);
             }
-            const getPembeli = async () =>{
-
-                const docRef = doc(db, "user", auth().currentUser?.uid)
-                const docSnap = await getDoc(docRef)
-                if (docSnap.exists()) {
-                    setDataPembeli(docSnap.data())
-                } else {
-                    // doc.data() will be undefined in this case
-                    console.log("No such document!");
-                }
+          };
+    
+          const getPembeli = async () => {
+            try {
+              const docRef = doc(db, 'user', auth().currentUser?.uid);
+              const docSnap = await getDoc(docRef);
+              if (docSnap.exists()) {
+                setDataPembeli(docSnap.data());
+              } else {
+                console.log('No such document!');
+              }
+            } catch (error) {
+              console.error('Error fetching pembeli data:', error);
             }
-            getUser()
-            getPembeli()
-    }, [])
+          };
+    
+          getUser();
+          getPembeli();
+        }
+      }, [detailProduk, focus]);
 
     const handleWishlist = async() =>{
         const idWishlist = "C" + auth().currentUser?.uid + detailProduk.idProduk
@@ -60,7 +70,7 @@ const DetailProdukGoogle = ({route, navigation}) => {
             detailToko : dataDetail,
             produk : detailProduk
         }).then(() => {
-            alert("Produk Masuk Ke Wishlist")
+            alert("Produk Masuk Ke Keranjang")
         }).catch((error) =>{
             alert(error)
         })
@@ -81,9 +91,10 @@ const DetailProdukGoogle = ({route, navigation}) => {
 
     const handleBuy =  () =>{
         navigation.navigate('FormPembelianGoogle', {
-            detailPembelian : dataBeli
+            detailPembelian : [dataBeli]
             })
     }
+    
   return (
     <NativeBaseProvider>
     <SafeAreaView>
@@ -99,12 +110,12 @@ const DetailProdukGoogle = ({route, navigation}) => {
                 />
                 </Box>
                 <Box py="3">
-                    <Text bold fontSize="xl" color="#EFAF00" m="0" p="0"> Rp {detailProduk.hargaProduk} </Text>
+                <Text bold fontSize="xl" color="#EFAF00" m="0" p="0"> Rp {detailProduk.hargaProduk} / Rp {detailProduk.hargaProduk1} / Rp {detailProduk.hargaProduk2}</Text>
                     <Text bold fontSize="lg"> {detailProduk.namaProduk}</Text>
                     <HStack>
                     <Box>
                             <Text> Toko : {dataDetail.namaToko} </Text>
-                            <Text> Stok : {detailProduk.stokProduk}</Text>
+                            <Text> Stok : {detailProduk.stokProduk} ({detailProduk.miliProduk}ml) / {detailProduk.stokProduk1} ({detailProduk.miliProduk1}ml) / {detailProduk.stokProduk2} ({detailProduk.miliProduk2}ml)</Text>
                         </Box>
                     </HStack>
                 </Box>
@@ -121,7 +132,6 @@ const DetailProdukGoogle = ({route, navigation}) => {
                             </Box>
                             <Box>
                                 <Text> Umur : {detailProduk.umurProduk}</Text>
-                                <Text> Ukuran : {detailProduk.miliProduk} ml</Text>
                             </Box>
                         </HStack>
 
@@ -131,13 +141,12 @@ const DetailProdukGoogle = ({route, navigation}) => {
                 <Box py="1">
                     <Text fontSize="md" bold> Deskripsi :</Text>
                     <Text fontSize="sm"> {detailProduk.descProduk}</Text>
-                    <Text fontSize="sm">  {detailProduk.idProduk}</Text>
                 </Box>
                 <Divider />
                 <Stack direction="row" alignSelf="flex-end" space={2} my="3">
 
                 <Button size="sm" variant="outline">
-                <Ionicons name="heart" size={24} color="#EFAF00"onPress={handleWishlist} />
+                <Entypo name="shopping-cart" size={24} color="#EFAF00" onPress={handleWishlist} />
                 </Button>
                 <Button size="sm" variant="outline">
                 <Ionicons name="chatbox" size={24} onPress={addList} color="#EFAF00"/>

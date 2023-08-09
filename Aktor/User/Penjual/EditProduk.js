@@ -1,12 +1,14 @@
 import React, { useState, useEffect} from 'react'
-import { NativeBaseProvider, ScrollView, Box, FormControl, Text, Input,Image, Progress, TextArea, CheckIcon, Stack, Button,  Radio, Select, Center, VStack, HStack} from 'native-base'
+import { NativeBaseProvider, ScrollView, Box, FormControl, Text ,Input,Image, Progress, TextArea, CheckIcon, Stack, Button,  Radio, Select, Center, VStack, HStack} from 'native-base'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { auth, db, storage} from "../../../firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { collection, doc, setDoc } from "firebase/firestore"; 
+import { collection, doc, setDoc, updateDoc } from "firebase/firestore"; 
 import * as ImagePicker from "expo-image-picker/src/ImagePicker";
 
-const AddProduk = ({route, navigation}) => {
+const EditProduk = ({route, navigation}) => {
+  const {detailProduk} = route.params
+  console.log("isi Edit Stok", detailProduk)
   const [namaProduk, setNamaProduk] = useState("");
   const [descProduk, setDescProduk] = useState("");
   const [fotoProduk, setFotoProduk] = useState(null)
@@ -110,11 +112,9 @@ const AddProduk = ({route, navigation}) => {
   };
   const handleUpload = async() =>{
     if(fotoProduk != null && namaProduk != "" && stokProduk !=""){
-      const idProduk = new Date().getTime()
-      const docRef = collection(db, "produk")
-      setDoc(doc(docRef, `${idProduk}`),{
-        userUid : auth.currentUser?.uid,
-        idProduk : idProduk,
+      const idProduk = detailProduk.idProduk
+      const updateUser = doc(db, "produk",`${idProduk}`)
+      await updateDoc(updateUser , {
         namaProduk : namaProduk,
         hargaProduk : hargaProduk,
         miliProduk : mili,
@@ -130,7 +130,8 @@ const AddProduk = ({route, navigation}) => {
         jenisKelamin : value,
         umurProduk : umurProduk,
         imgProduk : fotoProduk
-      }).then(() =>{
+      })
+      .then(() =>{
         alert("Produk Berhasil diUploud")
         setNamaProduk("")
         setHargaProduk("")
@@ -151,6 +152,7 @@ const AddProduk = ({route, navigation}) => {
         setMili2("")
         setFotoProduk(null)
         setImage(null)
+      navigation.navigate('List Produk');
       }).catch((err) => alert(err));
     }else{
       alert("Form ada yang kosong")
@@ -166,7 +168,7 @@ const AddProduk = ({route, navigation}) => {
               <Box backgroundColor="white" p={3}>
               <FormControl>
                 <FormControl.Label>Nama Produk</FormControl.Label>
-                <Input placeholder='Parfum Wangi'
+                <Input placeholder={detailProduk.namaProduk}
                     type="text"
                     value={namaProduk}
                     onChangeText= {text => setNamaProduk(text)}
@@ -175,7 +177,7 @@ const AddProduk = ({route, navigation}) => {
               <Box>
                 <FormControl>
                   <FormControl.Label>Deskripsi Produk :</FormControl.Label>
-                  <TextArea h={20} placeholder="Text Area Placeholder"  
+                  <TextArea h={20} placeholder={detailProduk.descProduk}
                     type="text"
                     value={descProduk}
                     onChangeText= {text => setDescProduk(text)}
@@ -192,7 +194,8 @@ const AddProduk = ({route, navigation}) => {
               <Box width="20%">
               <FormControl >
                 <FormControl.Label>Harga</FormControl.Label>
-                <Input  keyboardType='numeric' 
+                <Input  keyboardType='numeric'
+                    placeholder={detailProduk.hargaProduk}
                     type="text"
                     value={hargaProduk}
                     onChangeText= {text => setHargaProduk(text)}
@@ -202,7 +205,7 @@ const AddProduk = ({route, navigation}) => {
               <Box width="20%">
               <FormControl >
                 <FormControl.Label>Ukuran</FormControl.Label>
-                <Input placeholder='\ml' keyboardType='numeric' 
+                <Input placeholder={detailProduk.miliProduk} keyboardType='numeric' 
                     type="text"
                     value={mili}
                     onChangeText= {text => setMili(text)}
@@ -213,6 +216,7 @@ const AddProduk = ({route, navigation}) => {
               <FormControl >
                 <FormControl.Label>Stok</FormControl.Label>
                 <Input  keyboardType='numeric' 
+                    
                     type="text"
                     value={stokProduk}
                     onChangeText= {text => setStokProduk(text)}
@@ -227,6 +231,7 @@ const AddProduk = ({route, navigation}) => {
                 <FormControl.Label>Harga</FormControl.Label>
                 <Input  keyboardType='numeric' 
                     type="text"
+                    placeholder={detailProduk.hargaProduk1}
                     value={hargaProduk1}
                     onChangeText= {text => setHargaProduk1(text)}
                 />
@@ -235,7 +240,7 @@ const AddProduk = ({route, navigation}) => {
               <Box width="20%">
               <FormControl >
                 <FormControl.Label>Ukuran</FormControl.Label>
-                <Input placeholder='\ml' keyboardType='numeric' 
+                <Input placeholder={detailProduk.miliProduk1} keyboardType='numeric' 
                     type="text"
                     value={mili1}
                     onChangeText= {text => setMili1(text)}
@@ -246,6 +251,7 @@ const AddProduk = ({route, navigation}) => {
               <FormControl >
                 <FormControl.Label>Stok</FormControl.Label>
                 <Input keyboardType='numeric' 
+                    
                     type="text"
                     value={stokProduk1}
                     onChangeText= {text => setStokProduk1(text)}
@@ -259,6 +265,7 @@ const AddProduk = ({route, navigation}) => {
                 <FormControl.Label>Harga</FormControl.Label>
                 <Input  keyboardType='numeric' 
                     type="text"
+                    placeholder={detailProduk.hargaProduk2}
                     value={hargaProduk2}
                     onChangeText= {text => setHargaProduk2(text)}
                 />
@@ -267,7 +274,7 @@ const AddProduk = ({route, navigation}) => {
               <Box width="20%">
               <FormControl >
                 <FormControl.Label>Ukuran</FormControl.Label>
-                <Input placeholder='\ml' keyboardType='numeric' 
+                <Input placeholder={detailProduk.miliProduk2} keyboardType='numeric' 
                     type="text"
                     value={mili2}
                     onChangeText= {text => setMili2(text)}
@@ -279,6 +286,7 @@ const AddProduk = ({route, navigation}) => {
                 <FormControl.Label>Stok</FormControl.Label>
                 <Input  keyboardType='numeric' 
                     type="text"
+                    
                     value={stokProduk2}
                     onChangeText= {text => setStokProduk2(text)}
                 />
@@ -315,7 +323,7 @@ const AddProduk = ({route, navigation}) => {
               <Box width="20%">
               <FormControl >
                 <FormControl.Label>Umur</FormControl.Label>
-                <Input placeholder='20' keyboardType='numeric' 
+                <Input placeholder={detailProduk.umurProduk} keyboardType='numeric' 
                     type="text"
                     value={umurProduk}
                     onChangeText= {text => setUmurProduk(text)}
@@ -377,4 +385,4 @@ const AddProduk = ({route, navigation}) => {
   )
 }
 
-export default AddProduk
+export default EditProduk

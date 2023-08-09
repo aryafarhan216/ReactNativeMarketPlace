@@ -11,6 +11,7 @@ import { HStack, NativeBaseProvider, ScrollView, Box, Divider, Text,Modal, Image
 const KonfirmasiPesanan = () => {
   const [data, setData] = useState([null])
   const [showModal,setShowModal] = useState(false)
+  const [selectedProductIndex, setSelectedProductIndex] = useState(0)
   // image
   const [fotoProduk, setFotoProduk] = useState(null)
   const [image, setImage] = useState(null)
@@ -40,7 +41,7 @@ const KonfirmasiPesanan = () => {
   useEffect(()=>{
     if(focus){
       let userRef = collection(db,"pesanan")
-      let q = query(userRef, where("isConfirm", "==", false))
+      let q = query(userRef, where("isConfirm", "==", false), where("isCancel", "==", false));
       // realtime
       const realData  = onSnapshot(q,
         (snapShot) =>{
@@ -65,7 +66,7 @@ const KonfirmasiPesanan = () => {
 
   const handleStatus = async(idPesanan) =>{
     console.log(idPesanan)
-    const updateUser = doc(db, "pesanan",`${idPesanan}`)
+    const updateUser = doc(db, "pesanan",`${idPesanan.idPesanan}`)
     await updateDoc(updateUser, {
       isConfirm:true,
       imgValidAdmin: fotoProduk
@@ -76,6 +77,25 @@ const KonfirmasiPesanan = () => {
     .catch((err) => alert(err))
     setImage(null)
   }
+
+  const getTotalOngkirSum = () => {
+    const produkData = dataModal?.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk;
+    const totalOngkirData = dataModal?.pesanan?.totalDataOngkir;
+    
+    
+    if (produkData && totalOngkirData) {
+      const produkLength = produkData.length;
+      console.log(produkLength)
+      let sum = 0;
+      for (let i = 0; i < produkLength; i++) {
+        sum += totalOngkirData[i]?.hargaOngkir || 0;
+      }
+      console.log(sum)
+      return sum;
+    }
+    
+    return 0; // Return 0 in case the necessary data is not available
+  };
 
   return (
     <NativeBaseProvider>
@@ -108,8 +128,11 @@ const KonfirmasiPesanan = () => {
           return(
         <Pressable key={index}
           onPress={() =>{
+            const tglPembelian = data?.TglPembelian?.toDate().toString();
             setShowModal(true)
             setDataModal({
+              pesanan: data,
+              selectedProductIndex: index,
               idPesanan:data?.idPesanan,
               jasaOngkir: data?.jasaOngkir,
               totalOngkir: data?.totalOngkir,
@@ -119,11 +142,16 @@ const KonfirmasiPesanan = () => {
               hargaProduk: data?.detailPenjual?.produk?.hargaProduk,
               imgProduk :data?.detailPenjual?.produk?.imgProduk,
               descProduk: data?.detailPenjual?.produk?.descProduk,
+              tglPembelian : tglPembelian,
               // pembeli
               namaPembeli:data?.detailPembeli?.nama,
               noHpPembeli:data?.detailPembeli?.noHp ,
               imgBukti:data?.imgValid,
               stokBeli : data?.stokBeli,
+              miliTerjual: data?.miliTerjual,
+              rekeningP : data?.detailPembeli?.rekening,
+              noRekeningP : data?.detailPembeli?.noRekening,
+              atasNamaP : data?.detailPembeli?.atasNama,
               // penjual
               namaToko:data?.detailPenjual?.detailToko?.namaToko,
               rekening:data?.detailPenjual?.detailToko?.bank?.rekening,
@@ -161,60 +189,90 @@ const KonfirmasiPesanan = () => {
       </ScrollView>
        {/* Modal */}
     <Center>
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} propagateSwipe>
+      
         <Modal.Content maxWidth="400px">
           <Modal.CloseButton />
           <Modal.Header>Detail Pesanan {dataModal?.idPesanan}</Modal.Header>
           <Modal.Body>
           <VStack>
          <Box>
-         <Text mb="2" bold>Detail Penjual:</Text>
-            <HStack space={3}>
-              <Box pt="2">
-              <Image 
-                source={{uri : dataModal?.imgProduk}}
-                size="sm"
-                alt='foto'
-                rounded="sm"
-                />
-              </Box>
-              <Box>
-              <VStack space={0}>
-              <Box>
-              <Text fontSize="sm">
-                {dataModal?.namaToko}
-              </Text>
-              </Box>
-                <Box >
-                <Text fontSize="sm">
-                {dataModal?.namaProduk}
-                </Text>
-              </Box>
-                <Box >
-                <Text bold color="#EFAF00" fontSize="sm">
-                  RP. {dataModal?.hargaProduk}
-                </Text>
-                </Box>
-                                <Box >
-                <Text fontSize="xs">
-                  { dataModal?.jasaOngkir ==="one"
-                  ? <Text>Kurir : JNE</Text>
-                  : <Text>Diantar</Text>
-                  }
-                </Text>
-              </Box>
-              </VStack>
-              </Box>
+         <Text bold>Detail Penjual:</Text>
+         <Text mb="2">{dataModal?.tglPembelian}</Text>
 
-            </HStack>
+         {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk.map((produk, index) => (
+  <VStack key={index} my={2}>
+    <Box>
+      <Text fontSize="xs">
+        Toko: {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.detailToko?.namaToko}
+      </Text>
+      <Text fontSize="sm">
+        Produk: {produk.namaProduk}
+      </Text>
+    </Box>
+    <Box>
+      <HStack space={3}>
+        <Box pt="2">
+          <Image
+            source={{ uri: produk.imgProduk }}
+            size="md"
+            alt='foto'
+            rounded="sm"
+          />
+        </Box>
+        <Box>
+          <VStack space={0}>
+            <Box>
+              <Text fontSize="sm">
+              <Text fontSize="sm">
+              <Text fontSize="sm">
+  {dataModal.pesanan?.produk[index].miliBeli === "1"
+    ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index].miliProduk
+    : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index][`miliProduk${dataModal.pesanan?.produk[index].miliBeli - 1}`]} \ mili
+</Text>
+
+</Text>
+
+
+              </Text>
+              <Text fontSize="sm">
+              {dataModal.pesanan?.produk[index].miliBeli}
+                Stok dibeli: {dataModal.pesanan?.produk[index].stokBeli}
+              </Text>
+              <Text fontSize="sm">
+                Ongkos: {dataModal.pesanan?.totalDataOngkir[index].hargaOngkir}
+              </Text>
+            </Box>
+            <Box>
+              <Text bold color="#EFAF00" fontSize="sm">
+                RP. {produk.hargaProduk}
+              </Text>
+            </Box>
+            <Box>
+              <Text fontSize="xs">
+                {dataModal.pesanan?.jasaDataOngkir[index] === "one" ? <Text>Kurir : JNE</Text> : <Text>Diantar</Text>}
+              </Text>
+            </Box>
+          </VStack>
+        </Box>
+      </HStack>
+     
+    </Box>
+  </VStack>
+))}
+
+
+
+            
             <Box>
             </Box>
         </Box>
         <Divider my="2"/>
         <Box>
-        <Text>Rekening       : {dataModal?.rekening}</Text>
-        <Text>No Rekening : {dataModal?.noRekening}</Text>
-        <Text>Atas Nama    : {dataModal?.atasNama}</Text>
+        <Text bold fontSize="md">Admin TRANSFER : {getTotalOngkirSum()}</Text>
+        <Text>Rekening       : {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.detailToko.bank.rekening}</Text>
+        <Text>No Rekening : {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.detailToko.bank.noRekening}</Text>
+        <Text>Atas Nama    : {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.detailToko.bank.atasNama}</Text>
       </Box>
         </VStack>
         <Divider my="2"/>
@@ -244,11 +302,13 @@ const KonfirmasiPesanan = () => {
                 </Text>
               </Box>
                 <Box >
-                <Text bold color="#EFAF00" fontSize="sm">
-                  Stok : {dataModal?.stokBeli}
+     
+
+                <Text bold  fontSize="sm">
+                 Total Pembayaran:
                 </Text>
-                <Text bold color="#EFAF00" fontSize="sm">
-                  RP. {dataModal?.hargaProduk}
+                <Text bold  fontSize="sm">
+                 RP. {dataModal?.totalOngkir}
                 </Text>
                 </Box>
                 <Box >
@@ -265,6 +325,11 @@ const KonfirmasiPesanan = () => {
             <Box>
             </Box>
             <Divider my="2"/>
+        <Box>
+        <Text>Rekening       : {dataModal?.rekeningP}</Text>
+        <Text>No Rekening : {dataModal?.noRekeningP}</Text>
+        <Text>Atas Nama    : {dataModal?.atasNamaP}</Text>
+      </Box>
         </Box>
         </VStack>
           </Modal.Body>
@@ -277,7 +342,7 @@ const KonfirmasiPesanan = () => {
               </Button>
               <Button onPress={() => {
              setShowModal(false);
-              handleStatus(dataModal.idPesanan);
+              handleStatus(dataModal?.pesanan);
               
             }} colorScheme="yellow">
                 Konfirmasi

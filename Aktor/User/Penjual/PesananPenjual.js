@@ -11,6 +11,8 @@ const img = require('../../../assets/src/DrawKit-Vector-Illustration-ecommerce-1
 const PesananPenjual = () => {
   const [showModal, setShowModal] = useState(false);
   const [resi, setResi] = useState("")
+  const [namaAntar, setNamaAntar] = useState("")
+  const [noAntar, setNoAntar] = useState("")
   const [dataModal, setDataModal] = useState({
     namaProduk: "",
     imgProduk : "",
@@ -46,14 +48,35 @@ const PesananPenjual = () => {
 
   const handleUpdateResi = async(idPesanan) =>{
     console.log(idPesanan)
-    const updateUser = doc(db, "pesanan",`${idPesanan}`)
+    const updateUser = doc(db, "pesanan",`${idPesanan.idPesanan}`)
     await updateDoc(updateUser, {
-      resi: resi
+      resi: resi,
+      noAntar: noAntar,
+      namaAntar: namaAntar,
     }).then(()=>{
-      alert("Resi Update")
+      alert("data sudah di update")
     })
     .catch((err) => alert(err))
   }
+
+  const getTotalOngkirSum = () => {
+    const produkData = dataModal?.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk;
+    const totalOngkirData = dataModal?.pesanan?.totalDataOngkir;
+    
+    
+    if (produkData && totalOngkirData) {
+      const produkLength = produkData.length;
+      console.log(produkLength)
+      let sum = 0;
+      for (let i = 0; i < produkLength; i++) {
+        sum += totalOngkirData[i]?.hargaOngkir || 0;
+      }
+      console.log(sum)
+      return sum;
+    }
+    
+    return 0; // Return 0 in case the necessary data is not available
+  };
 
   console.log("pesanan", auth.currentUser.uid)
   return (
@@ -68,79 +91,90 @@ const PesananPenjual = () => {
       </Box>
       :
       <Box>
-        {data?.map((data, index) =>{
-          return(
-            <Pressable onPress={() => {
-              setShowModal(true)
-              setDataModal({
-                namaPembeli: data?.detailPembeli?.nama,
-                namaProduk: data?.detailPenjual?.produk?.namaProduk,
-                imgProduk : data?.detailPenjual?.produk?.imgProduk,
-                hargaProduk : data?.totalOngkir,
-                idPesanan : data?.idPesanan,
-                imgValid : data?.imgValidAdmin,
-                jasaOngkir : data?.jasaOngkir,
-                resi : data?.resi,
-                alamat : `${data?.detailPembeli?.address?.city}, ${data?.detailPembeli?.address?.district}, ${data?.detailPembeli?.address?.street}, ${data?.detailPembeli?.address?.region}, ${data?.detailPembeli?.address?.subregion}`
-              })
+      {data?.map((data, index) =>{
+        return(
+              <Pressable
+                onPress={() => {
+                  const tglPembelian = data?.TglPembelian?.toDate();
+                  const formattedDate = tglPembelian?.toLocaleDateString();
 
-              }} key={index}>
+                  setDataModal({
+                    resi : data?.resi,
+                    noAntar : data?.noAntar,
+                    namaAntar : data?.namaAntar,
+                    alamat : `${data?.detailPembeli?.address?.city}, ${data?.detailPembeli?.address?.district}, ${data?.detailPembeli?.address?.street}, ${data?.detailPembeli?.address?.region}, ${data?.detailPembeli?.address?.subregion}`,
+                    detailAlamat : data?.detailAlamat,
+                    pesanan: data, // Set the entire data object to pesanan property
+                    idPesanan: data?.idPesanan,
+                    namaToko: data?.detailDataPenjual[0]?.detailPenjual?.detailToko?.namaToko,
+                    namaProduk: data?.detailDataPenjual[0]?.detailPenjual?.produk[0].namaProduk,
+                    tglPembelian: formattedDate,
+                    imgProduk: data?.detailDataPenjual[0]?.detailPenjual?.produk[0].imgProduk,
+                    totalHarga: data?.detailDataPenjual[0]?.detailPenjual?.produk[0].hargaProduk,
+                    totalOngkir:data?.totalOngkir,
+                    stokBeli: data?.detailDataPenjual[0]?.detailPenjual?.produk[0].stokBeli,
+                    miliTerjual: data?.detailDataPenjual[0]?.detailPenjual?.produk[0].miliTerjual,
+                    isCanceled: data?.detailDataPenjual[0]?.detailPenjual?.produk[0].isCancel,
+                    isCanceled1: data?.detailDataPenjual[0]?.detailPenjual?.produk[0].isCancel1,
+                    imgValidAdmin: data?.detailDataPenjual[0]?.detailPenjual?.produk[0].imgValidAdmin,
+                    isConfirm: data?.detailDataPenjual[0]?.detailPenjual?.produk[0].isConfirm,
+                    isDone: data?.detailDataPenjual[0]?.detailPenjual?.produk[0].isDone,
+                    jasaOngkir : data?.jasaDataOngkir[0].jasaOngkir
+                  });
+
+                  setShowModal(true);
+                }}
+                key={index}
+              >
         <Box bg="white" rounded="xl" p="5" mt="4" mx="5" key={index}>
         <VStack>
         <Box>
-        <Text bold fontSize="lg" mb="1">
-            {data?.detailPembeli?.nama}
+        <Text bold fontSize="xs" mb="1">
+          {data?.detailPembeli.nama}
         </Text>
         </Box>
-         <Box>
-            <HStack space={3}>
-              <Box pt="2">
-              <Image 
-                source={{uri : data?.detailPenjual?.produk?.imgProduk}}
+        {data?.detailDataPenjual[0]?.detailPenjual?.produk.map((produk, index) => (
+        <Box key={index} mb={3}>
+          <HStack space={3}>
+            <Box pt="2">
+              <Image
+                source={{ uri: produk.imgProduk }}
                 size="sm"
-                alt='foto'
+                alt="foto"
                 rounded="sm"
-                />
-              </Box>
-              <Box>
+              />
+            </Box>
+            <Box style={{ width: '30%' }}>
               <VStack space={0}>
-                <Box >
-                <Text fontSize="sm">
-                {data?.detailPenjual?.produk?.namaProduk}
-                </Text>
-              </Box>
-                <Box >
-                <Text bold color="#EFAF00" fontSize="sm">
-                 Beli : {data?.stokBeli}
-                </Text>
-                <Text bold color="#EFAF00" fontSize="sm">
-                  RP. {data?.totalOngkir}
-                </Text>
+                <Box>
+                  <Text fontSize="sm">{produk.namaProduk}</Text>
                 </Box>
-                                <Box >
-                <Text fontSize="xs">
-                  {data?.jasaOngkir === "one"
-                  ?<Text>Kurir : JNE</Text>
-                  :<Text>Diantar</Text>
-                  }
-                </Text>
-              </Box>
-                <Box >
-                <Text fontSize="xs">
-                {data?.jasaOngkir === "one" &&
-                  <Text>resi : {data?.resi}</Text>
-                  }
-                </Text>
+                <Box>
+                  <Text bold color="#EFAF00" fontSize="sm">
+                    RP. {produk.hargaProduk}
+                  </Text>
+                </Box>
+                <Box>
+                  <Text fontSize="xs">
+                    {produk.jasaOngkir === 'one' ? (
+                      <Text>Kurir : JNE</Text>
+                    ) : (
+                      <Text>On the way</Text>
+                    )}
+                  </Text>
                 </Box>
               </VStack>
-              </Box>
-            </HStack>
+            </Box>
+            
+          </HStack>
         </Box>
+      ))}
         </VStack>
         </Box>
-  </Pressable>
-          )
-        })}
+        </Pressable>
+        )
+
+      })}
       </Box>
 
       }
@@ -161,46 +195,66 @@ const PesananPenjual = () => {
         <Text bold fontSize="md" mb="1">
         {dataModal?.idPesanan}
         </Text>
+        <Text mb="2">Tanggal Pemesanan: {dataModal?.tglPembelian}</Text>
         </Box>
          <Box>
-            <HStack space={3}>
-
-              <Box mt="4">
-              <Image 
-                source={{uri : dataModal.imgProduk}}
-                size="sm"
-                alt='foto'
-                rounded="sm"
-                />
-              </Box>
-              <Box>
-              <VStack space={0}>
-              <Box>
-                <Text fontSize="lg">
-                  {dataModal.namaPembeli}
-                </Text>
-              </Box>
-                <Box >
-                <Text fontSize="sm">
-                {dataModal?.namaProduk}
-                </Text>
-              </Box>
-                <Box >
-                <Text bold color="#EFAF00" fontSize="sm">
-                  RP. {dataModal.hargaProduk}
-                </Text>
-                </Box>
-                  <Box >
-                <Text fontSize="xs">
-                  Kurir : JNE
-                </Text>
-              </Box>
-              </VStack>
-              </Box>
-            </HStack>
+         {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk.map((produk, index) => (
+  <VStack key={index}>
+    <Box>
+      <Text fontSize="xs">
+        Toko: {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.detailToko?.namaToko}
+      </Text>
+      <Text fontSize="sm">
+        Produk: {produk.namaProduk}
+      </Text>
+      <Text bold fontSize="xs" mb="1">
+        Tanggal Pembelian: {dataModal.tglPembelian}
+      </Text>
+    </Box>
+    <Box>
+      <HStack space={3}>
+        <Box pt="2">
+          <Image
+            source={{ uri: produk.imgProduk }}
+            size="md"
+            alt='foto'
+            rounded="sm"
+          />
+        </Box>
+        <Box>
+          <VStack space={0}>
+            <Box>
+              <Text fontSize="sm">
+              {dataModal.pesanan?.produk[index].miliBeli === "1"
+    ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index].miliProduk
+    : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index][`miliProduk${dataModal.pesanan?.produk[index].miliBeli - 1}`]} \ mili
+         
+              </Text>
+              <Text fontSize="sm">
+                Stok dibeli: {dataModal.pesanan?.produk[index].stokBeli}
+              </Text>
+            </Box>
+            <Box>
+              <Text bold color="#EFAF00" fontSize="sm">
+                RP. {produk.hargaProduk}
+              </Text>
+            </Box>
+            <Box>
+              <Text fontSize="xs">
+                {dataModal.pesanan?.jasaDataOngkir[0].jasaOngkir === "one" ? <Text>Kurir : JNE</Text> : <Text>Diantar</Text>}
+              </Text>
+            </Box>
+          </VStack>
+        </Box>
+      </HStack>
+    </Box>
+  </VStack>
+))}
+     
+          
         </Box>
         </VStack>
-        <Box my="3">
+        <Box mt="3">
           <Text>
             Alamat Pembeli  :
           </Text>
@@ -208,10 +262,19 @@ const PesananPenjual = () => {
             {dataModal.alamat}
           </Text>
         </Box>
+        <Box mb="3" mt="1">
+          <Text>
+            Detail Alamat  :
+          </Text>
+          <Text>
+            {dataModal.detailAlamat}
+          </Text>
+        </Box>
         {dataModal.jasaOngkir === "one" 
         ?
         <Box>
-        <Divider mt="4"/>
+        <Text bold fontSize="md"> Total {getTotalOngkirSum()}</Text>
+        <Divider mt="2"/>
         <FormControl mt="3">
           <FormControl.Label>ADD RESI</FormControl.Label>
           { dataModal.resi == ""
@@ -232,7 +295,36 @@ const PesananPenjual = () => {
         </Box>
         :
         <Box>
+        <FormControl mt="1">
+          
+          { dataModal.noAntar == ""
+          ?
+          <Box>
+          <FormControl.Label>Nama Pengirim</FormControl.Label>
+          <Input 
+                type="text"
+                value={namaAntar}
+                onChangeText= {text => setNamaAntar(text)}
+          />
+          <FormControl.Label>No Pengirim</FormControl.Label>
+          <Input 
+                keyboardType="numeric"
+                placeholder="081234567890"
+                type="text"
+                value={noAntar}
+                onChangeText= {text => setNoAntar(text)}
+          />
+          </Box>
 
+          :
+          <Box>
+            Nama Pengirim: {dataModal.namaAntar}
+            No Pengirim: {dataModal.noAntar}
+          </Box>
+
+          }
+         
+        </FormControl>
         </Box>
         
         }
@@ -249,7 +341,7 @@ const PesananPenjual = () => {
               </Button>
               <Button onPress={() => {
               setShowModal(false);
-              handleUpdateResi(dataModal?.idPesanan);
+              handleUpdateResi(dataModal?.pesanan);
               setResi("")
             }} colorScheme="green">
                 Done

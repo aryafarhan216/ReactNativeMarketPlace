@@ -18,6 +18,7 @@ import BottomNavGoogle from './Aktor/ComponentGlobal/BottomNavGoogle';
 import DetailProdukGoogle from './Aktor/User/PembeliGoogle/DetailProdukGoogle';
 import FormPembelianGoogle from './Aktor/User/PembeliGoogle/FormPembelianGoogle';
 import ChatGoogle from './Aktor/User/PembeliGoogle/ChatGoogle';
+import EditProduk from './Aktor/User/Penjual/EditProduk';
 
 // Variable Stack
 const Stack = createNativeStackNavigator();
@@ -68,6 +69,10 @@ export default function App() {
         <Stack.Screen 
         name="DetailPageGoogle" 
         component={DetailProdukGoogle} 
+        />
+        <Stack.Screen 
+        name="EditProduk" 
+        component={EditProduk} 
         />
         <Stack.Screen 
         name="FormPembelian" 

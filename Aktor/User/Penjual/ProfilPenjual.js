@@ -34,7 +34,7 @@ const ProfilPenjual = ({route, navigation}) => {
       }
     }
     getData()
-  },[])
+  },[dataUser])
 
   const handleMap = async() =>{
     console.log("masuk handle map")
@@ -57,6 +57,7 @@ const ProfilPenjual = ({route, navigation}) => {
     console.log("isi status", dataLocation)
     
     setMapLocation(dataLocation)
+    alert(`map sudah update`)
   }
 
 
@@ -76,19 +77,19 @@ const ProfilPenjual = ({route, navigation}) => {
   }
 
   const handleUpdate = async() =>{
-    console.log(namaTokos)
+    console.log(auth.currentUser?.uid)
     const updateUser = doc(db, "user",`${auth.currentUser?.uid}`)
     await updateDoc(updateUser, {
+      nama : nama,
       namaToko: namaTokos,
       bank :{
-        nama : nama,
         rekening : service,
         noRekening : rek,
-        atasNama: atasNama,
-        isSiantar : isSiantar,
-        addressCord: location,
-        address: mapLocation[0]
-      }
+        atasNama: atasNama
+      },
+      isSiantar : isSiantar,
+      addressCord: location,
+      address: mapLocation[0]
     })
     .catch((err) => alert(err))
     alert("Sudah Update")

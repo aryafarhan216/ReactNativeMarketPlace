@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { Linking } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { NativeBaseProvider, ScrollView, Box, Text, VStack, HStack, 
   Center,FormControl, Input, Modal, Button,  ZStack, Image, AspectRatio, Pressable, Divider } from 'native-base'
 import { auth, db } from "../../../firebase";
@@ -70,13 +70,22 @@ const ProdukPembeli = ({navigation}) => {
   },[isFocus])
 
   const handleUpdate = async(idPesanan) =>{
-    console.log("masuk", idPesanan)
-    const updateUser = doc(db, "pesanan",`${idPesanan}`)
+    const updateUser = doc(db, "pesanan",`${idPesanan.idPesanan}`)
     await updateDoc(updateUser, {
       isConfirm1 : true
       }).catch((err) => alert(err))
       alert("Pesanan Sudah Selesai")
   }
+
+  const handleBatal = async(idPesanan) =>{
+    console.log("masuk", idPesanan)
+    const updateUser = doc(db, "pesanan",`${idPesanan.idPesanan}`)
+    await updateDoc(updateUser, {
+      isCancel : true
+      }).catch((err) => alert(err))
+      alert("Pesanan diBatalkan")
+  }
+
   return (
     <NativeBaseProvider>
     <SafeAreaView>
@@ -86,75 +95,106 @@ const ProdukPembeli = ({navigation}) => {
  {/* Pesanan */}
  {dataPesanan?.map((dataPesanan, index) =>{
         return(
-          <Pressable onPress={() => {
-        setDataModal({
-          idPesanan : dataPesanan?.idPesanan,
-          namaToko : dataPesanan?.detailPenjual?.detailToko?.namaToko,
-          namaProduk : dataPesanan?.detailPenjual?.produk?.namaProduk,
-          imgProduk : dataPesanan?.detailPenjual?.produk?.imgProduk,
-          hargaProduk : dataPesanan?.detailPenjual?.produk?.hargaProduk,
-          kurir : dataPesanan?.jasaOngkir,
-          resi : dataPesanan?.resi
-      })
-        setShowModal(true)
-        }} key={index}>
+              <Pressable
+                onPress={() => {
+                  const tglPembelian = dataPesanan?.TglPembelian?.toDate();
+                  const formattedDate = tglPembelian?.toLocaleDateString();
+
+                  setDataModal({
+                    pesanan: dataPesanan, // Set the entire dataPesanan object to pesanan property
+                    idPesanan: dataPesanan?.idPesanan,
+                    namaToko: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.detailToko?.namaToko,
+                    namaProduk: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].namaProduk,
+                    tglPembelian: formattedDate,
+                    imgProduk: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].imgProduk,
+                    totalHarga: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].hargaProduk,
+                    totalOngkir:dataPesanan?.totalOngkir,
+                    stokBeli: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].stokBeli,
+                    miliTerjual: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].miliTerjual,
+                    noAntar: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].noAntar,
+                    namaAntar: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].namaAntar,
+                    kurir: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].jasaOngkir,
+                    resi: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].resi,
+                    isCanceled: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].isCancel,
+                    isCanceled1: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].isCancel1,
+                    imgValidAdmin: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].imgValidAdmin,
+                    isConfirm: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].isConfirm,
+                    isDone: dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].isDone,
+                  });
+
+                  setShowModal(true);
+                }}
+                key={index}
+              >
         <Box bg="white" rounded="xl" p="5" mt="4" mx="5" key={index}>
         <VStack>
         <Box>
         <Text bold fontSize="xs" mb="1">
-          {dataPesanan?.detailPenjual?.detailToko?.namaToko}
+          {dataPesanan?.detailDataPenjual[0]?.detailPenjual?.detailToko?.namaToko}
         </Text>
         </Box>
-         <Box>
-            <HStack space={3}>
-              <Box pt="2">
-              <Image 
-                source={{uri : dataPesanan?.detailPenjual?.produk?.imgProduk}}
+        {dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk.map((produk, index) => (
+        <Box key={index} mb={3}>
+          <HStack space={3}>
+            <Box pt="2">
+              <Image
+                source={{ uri: produk.imgProduk }}
                 size="sm"
-                alt='foto'
+                alt="foto"
                 rounded="sm"
-                />
-              </Box>
-              <Box style={{
-                    width: '30%'
-                  }}>
+              />
+            </Box>
+            <Box style={{ width: '30%' }}>
               <VStack space={0}>
-                <Box >
-                <Text fontSize="sm">
-                {dataPesanan?.detailPenjual?.produk?.namaProduk}
-                </Text>
-              </Box>
-                <Box >
-                <Text bold color="#EFAF00" fontSize="sm">
-                  RP. {dataPesanan?.totalOngkir}
-                </Text>
+                <Box>
+                  <Text fontSize="sm">{produk.namaProduk}</Text>
                 </Box>
-                <Box >
-                <Text fontSize="xs">
-                  {dataPesanan?.jasaOngkir === "one"
-                  ?<Text >Kurir : JNE</Text>
-                  : <Text >On the way</Text>
-                  }
+                <Box>
+                  <Text bold color="#EFAF00" fontSize="sm">
+                    RP. {produk.hargaProduk}
+                  </Text>
+                </Box>
+                <Box>
+                  <Text fontSize="xs">
+                    {produk.jasaOngkir === 'one' ? (
+                      <Text>Kurir : JNE</Text>
+                    ) : (
+                      <Text>On the way</Text>
+                    )}
+                  </Text>
+                </Box>
+              </VStack>
+            </Box>
+            <Divider orientation="vertical" bg="black" />
+            <Box>
+              <Text mt="3">Status :</Text>
+              {dataPesanan?.isCancel === true ? (
+            <Box>
+              {dataPesanan?.isCancel1 ? (
+                <Text> Dana sudah ditransfer</Text>
+              ) : (
+                <Text> Pengembalian DANA 1 x 24 jam</Text>
+              )}
+            </Box>
+          ) : dataPesanan?.isDone === false ? (
+            dataPesanan?.isConfirm === false ? (
+              <Text>Waiting to Admin</Text>
+            ) : dataPesanan?.noAntar ? (
+              <Box>
+                <Text>
+                  Pengirim : {dataPesanan?.namaAntar} | No Pengirim: {dataPesanan?.noAntar}
                 </Text>
               </Box>
-              </VStack>
-              </Box>
-              <Divider
-             orientation="vertical"
-                    bg="black"
-               />
-              <Box>
-              <Text mt="3">Status :</Text>
-              { dataPesanan?.isDone === false ?
-                    dataPesanan?.isConfirm === false
-                    ?<Text>Waiting to Admin</Text>
-                    :<Text>Seller Preparing</Text> :
-                  <Text>Selesai</Text>
-                }
-              </Box>
-            </HStack>
-
+            ) : (
+              <Text>sedang diantar</Text>
+            )
+          ) : (
+            <Text>Selesai</Text>
+          )}
+            </Box>
+          </HStack>
         </Box>
+      ))}
         </VStack>
         </Box>
         </Pressable>
@@ -170,97 +210,132 @@ const ProdukPembeli = ({navigation}) => {
       </ScrollView>
     </SafeAreaView>
     {/* Modal */}
+
     <Center>
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-        <Modal.Content maxWidth="400px">
-          <Modal.CloseButton />
-          <Modal.Header>Detail Pesanan</Modal.Header>
-          <Modal.Body>
-          <VStack>
-        <Box>
-        <Text bold fontSize="xs" mb="1">
-          {dataModal?.namaToko}
-        </Text>
+        <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+          <Modal.Content maxWidth="400px">
+            <Modal.CloseButton />
+            <Modal.Header>Detail Pesanan</Modal.Header>
+            <Modal.Body>
+              {/* Map through produk in dataModal.pesanan */}
+              {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk.map((produk, index) => (
+  <VStack key={index}>
+    <Box>
+      <Text fontSize="xs">
+        Toko: {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.detailToko?.namaToko}
+      </Text>
+      <Text fontSize="sm">
+        Produk: {produk.namaProduk}
+      </Text>
+      <Text bold fontSize="xs" mb="1">
+        Tanggal Pembelian: {dataModal.tglPembelian}
+      </Text>
+    </Box>
+    <Box>
+      <HStack space={3}>
+        <Box pt="2">
+          <Image
+            source={{ uri: produk.imgProduk }}
+            size="md"
+            alt='foto'
+            rounded="sm"
+          />
         </Box>
-         <Box>
-            <HStack space={3}>
-              <Box pt="2">
-              <Image 
-                source={{uri : dataModal?.imgProduk}}
-                size="sm"
-                alt='foto'
-                rounded="sm"
+        <Box>
+          <VStack space={0}>
+            <Box>
+              <Text fontSize="sm">
+              {dataModal.pesanan?.produk[index].miliBeli === "1"
+    ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index].miliProduk
+    : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index][`miliProduk${dataModal.pesanan?.produk[index].miliBeli - 1}`]} \ mili
+         
+              </Text>
+              <Text fontSize="sm">
+                Stok dibeli: {dataModal.pesanan?.produk[index].stokBeli}
+              </Text>
+            </Box>
+            <Box>
+              <Text bold color="#EFAF00" fontSize="sm">
+                RP. {produk.hargaProduk}
+              </Text>
+            </Box>
+            <Box>
+              <Text fontSize="xs">
+                {dataModal.pesanan?.jasaDataOngkir[0].jasaOngkir === "one" ? <Text>Kurir : JNE</Text> : <Text>Diantar</Text>}
+              </Text>
+            </Box>
+          </VStack>
+        </Box>
+      </HStack>
+      <Box my="2">
+        <Text fontSize="xs">Status Pesanan:</Text>
+        {dataModal.pesanan?.isCancel === true ? (
+          <Box>
+            {dataModal.pesanan?.isCancel1 ? (
+              <Box>
+                <Text my={2}>Dana Sudah dikembalikan</Text>
+                <Image
+                  source={{ uri: dataModal.pesanan?.imgValidAdmin }}
+                  size="xl"
+                  alt='foto'
+                  rounded="sm"
                 />
               </Box>
+            ) : (
+              <Text> Waiting...</Text>
+            )}
+          </Box>
+        ) : (
+          <Box>
+              {dataModal.pesanan?.jasaDataOngkir[0].jasaOngkir === 'one'
+              ?
               <Box>
-              <VStack space={0}>
-                <Box >
-                <Text fontSize="sm">
-                {dataModal?.namaProduk}
-                </Text>
-              </Box>
-                <Box >
-                <Text bold color="#EFAF00" fontSize="sm">
-                  RP. {dataModal?.hargaProduk}
-                </Text>
-                </Box>
-                                <Box >
-                <Text fontSize="xs">
-                  { dataModal?.kurir ==="one"
-                  ? <Text> Kurir : JNE</Text>
-                  : <Text> On the way</Text>
-                  }
-                </Text>
-              </Box>
-                <Box >
-                <Text fontSize="xs">
-                {dataModal?.resi === ""
-                  ? <Text> Waiting to Seller</Text>
-                  : <Text> Resi : {dataModal?.resi} </Text>
-                  }
-                </Text>
-                </Box>
-              </VStack>
-              </Box>
-            </HStack>
-            <Box>
-            {dataModal?.kurir === "one" &&
-            <Box>
-            <Text>Your paket</Text>
 
-            {dataModal?.resi != "" &&
-            <Text style={{color: 'blue'}}
-                onPress={() => Linking.openURL(`https://cekresi.jne.co.id/${dataModal?.resi}`)}>
-            link resi
-          </Text>
-            }
-            </Box>
-
-            }
+              <Text style={{color: 'blue'}}
+                    onPress={() => Linking.openURL('https://www.jne.co.id/id/tracking/trace')}>
+                Cek Resi : {dataModal.pesanan?.resi}
+              </Text>
+              </Box>
+              :
+              <Box>
+              <Text>Nama Antar : {dataModal.namaAntar}</Text>
+              <Text>No Antar ; {dataModal.noAntar}</Text>
+              </Box>
               
-            </Box>
-        </Box>
-        </VStack>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button.Group space={2}>
-              <Button variant="ghost" colorScheme="blueGray" onPress={() => {
-              setShowModal(false);
-            }}>
-                Cancel
+              }
+          </Box>
+        )}
+      </Box>
+    </Box>
+  </VStack>
+))}
+<Text bold fontSize="xl"> Total Ongkir: {dataModal?.totalOngkir}</Text>
+          {dataModal.pesanan?.isDone === true ? (
+              <Button colorScheme="yellow" onPress={() => { setShowModal(false); }}>
+                Okay
               </Button>
-              <Button onPress={() => {
-              setShowModal(false);
-              setIsConfirm(true)
-              handleUpdate(dataModal?.idPesanan)
-            }} colorScheme="yellow">
+            ) : (
+              <Button onPress={() => { setShowModal(false); setIsConfirm(true); handleUpdate(dataModal?.pesanan); }} colorScheme="yellow">
                 Konfirmasi
               </Button>
-            </Button.Group>
-          </Modal.Footer>
-        </Modal.Content>
-      </Modal>
-    </Center>
+            )}
+            
+            </Modal.Body>
+            <Modal.Footer>
+              <Button.Group space={2}>
+                <Button variant="ghost" colorScheme="blueGray" onPress={() => { setShowModal(false); }}>
+                  Cancel
+                </Button>
+                {dataModal.pesanan?.isCanceled !== true && dataModal.pesanan?.isConfirm !== true && dataModal.pesanan?.isDone !== true && (
+                  <Button variant="ghost" colorScheme="red" onPress={() => { setShowModal(false); handleBatal(dataModal.pesanan); }}>
+                    Batalkan
+                  </Button>
+                )}
+              </Button.Group>
+            </Modal.Footer>
+          </Modal.Content>
+        </Modal>
+      </Center>
 
     </NativeBaseProvider>
   )

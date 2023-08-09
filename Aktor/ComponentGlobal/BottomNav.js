@@ -6,6 +6,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 
+
 // Pages
 import Homepage from "../User/Pembeli/Homepage";
 import ProdukPembeli from "../User/Pembeli/ProdukPembeli";
@@ -19,7 +20,7 @@ const Tab = createBottomTabNavigator();
 const BottomNav = ({navigation}) => {
   return (
     <Tab.Navigator
-    initialRouteName="Home"
+    initialRouteName="Wishlist"
     >
       <Tab.Screen name="Home" component={Homepage} 
         options={{
@@ -30,11 +31,11 @@ const BottomNav = ({navigation}) => {
             )
         }}
       />
-      <Tab.Screen name="Wishlist" component={Wishlist} 
+      <Tab.Screen name="Keranjang" component={Wishlist} 
             options={{
-            tabBarLabel:"Wishlist",
+            tabBarLabel:"Keranjang",
             tabBarIcon:({color, size}) => (
-              <Ionicons name="heart" size={24} color="#EFAF00"/>
+              <Entypo name="shopping-cart" size={24} color="#EFAF00"/>
             )
         }}
       />

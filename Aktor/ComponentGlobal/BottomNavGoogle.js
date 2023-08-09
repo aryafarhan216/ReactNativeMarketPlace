@@ -30,11 +30,11 @@ const BottomNavGoogle = ({navigation}) => {
             )
         }}
       />
-      <Tab.Screen name="WishlistGoogle" component={WishlistGoogle} 
+      <Tab.Screen name="KeranjangGoogle" component={WishlistGoogle} 
             options={{
-            tabBarLabel:"Wishlist",
+            tabBarLabel:"Keranjang",
             tabBarIcon:({color, size}) => (
-              <Ionicons name="heart" size={24} color="#EFAF00"/>
+              <Entypo name="shopping-cart" size={24} color="#EFAF00"/>
             )
         }}
       />
