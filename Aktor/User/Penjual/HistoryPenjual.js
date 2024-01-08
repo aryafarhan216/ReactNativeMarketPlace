@@ -8,7 +8,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 const img = require('../../../assets/src/DrawKit-Vector-Illustration-ecommerce-17.png')
 
-const PesananPenjual = () => {
+const HistoryPenjual = () => {
   const [showModal, setShowModal] = useState(false);
   const [resi, setResi] = useState("")
   const [dataModal, setDataModal] = useState({
@@ -16,15 +16,14 @@ const PesananPenjual = () => {
     imgProduk : "",
     hargaProduk : "",
     idPesanan:"",
-    imgValid :"",
-    alamat: ""
+    imgValid :""
   })
   const [data, setData] = useState([null])
   const focus = useIsFocused()
   useEffect(()=>{
     if(focus){
       let userRef = collection(db,"pesanan")
-      let q = query(userRef, where( "userToko", "==",`${auth?.currentUser?.uid}`), where("isConfirm", "==", true,))
+      let q = query(userRef, where( "userToko", "==",`${auth?.currentUser?.uid}`), where("isDone", "==", true,))
       // realtime
       const realData  = onSnapshot(q,
         (snapShot) =>{
@@ -44,18 +43,18 @@ const PesananPenjual = () => {
     }
   }, [])
 
-  const handleUpdateResi = async(idPesanan) =>{
-    console.log(idPesanan)
-    const updateUser = doc(db, "pesanan",`${idPesanan}`)
-    await updateDoc(updateUser, {
-      resi: resi
-    }).then(()=>{
-      alert("Resi Update")
+  const totalIncome = () =>{
+    let total = 0
+    if(data.length > 1){
+      console.log("masuk")
+      Object.entries(data).forEach(([key, value]) => {
+        total += value.totalOngkir
     })
-    .catch((err) => alert(err))
-  }
+    return total
+    }
+    return total
+}
 
-  console.log("pesanan", auth.currentUser.uid)
   return (
     <NativeBaseProvider>
     <SafeAreaView>
@@ -68,19 +67,38 @@ const PesananPenjual = () => {
       </Box>
       :
       <Box>
+      <HStack>
+      <Box bg="white" rounded="xl" p="5" mt="4" ml="5">
+        <HStack>
+        <Text>Total : {data?.length}</Text>
+        </HStack>
+      </Box>
+
+      <Box bg="white" rounded="xl" p="5" mt="4" mx="2">
+        <HStack>
+        {data
+        ?
+        <Text>Income : {totalIncome()}</Text>
+        :
+        <Text>Income : 0</Text>
+        }
+        
+        </HStack>
+      </Box>
+      </HStack>
+
+
         {data?.map((data, index) =>{
           return(
             <Pressable onPress={() => {
               setShowModal(true)
               setDataModal({
-                namaPembeli: data?.detailPembeli?.nama,
                 namaProduk: data?.detailPenjual?.produk?.namaProduk,
                 imgProduk : data?.detailPenjual?.produk?.imgProduk,
                 hargaProduk : data?.totalOngkir,
                 idPesanan : data?.idPesanan,
-                imgValid : data?.imgValidAdmin,
-                jasaOngkir : data?.jasaOngkir,
-                alamat : `${data?.detailPembeli?.address?.city}, ${data?.detailPembeli?.address?.district}, ${data?.detailPembeli?.address?.street}, ${data?.detailPembeli?.address?.region}, ${data?.detailPembeli?.address?.subregion}`
+                imgValid : data?.imgValidAdmin
+
               })
 
               }} key={index}>
@@ -110,7 +128,7 @@ const PesananPenjual = () => {
               </Box>
                 <Box >
                 <Text bold color="#EFAF00" fontSize="sm">
-                 Beli : {data?.stokBeli}
+                  Beli: {data?.stokBeli}
                 </Text>
                 <Text bold color="#EFAF00" fontSize="sm">
                   RP. {data?.totalOngkir}
@@ -163,22 +181,15 @@ const PesananPenjual = () => {
         </Box>
          <Box>
             <HStack space={3}>
-
-              <Box mt="4">
+              <Box>
               <Image 
                 source={{uri : dataModal.imgProduk}}
                 size="sm"
                 alt='foto'
-                rounded="sm"
                 />
               </Box>
               <Box>
               <VStack space={0}>
-              <Box>
-                <Text fontSize="lg">
-                  {dataModal.namaPembeli}
-                </Text>
-              </Box>
                 <Box >
                 <Text fontSize="sm">
                 {dataModal?.namaProduk}
@@ -199,36 +210,19 @@ const PesananPenjual = () => {
             </HStack>
         </Box>
         </VStack>
-        <Box my="3">
-          <Text>
-            Alamat Pembeli  :
-          </Text>
-          <Text>
-            {dataModal.alamat}
-          </Text>
-        </Box>
-        {dataModal.jasaOngkir === "one" 
-        ?
-        <Box>
         <Divider mt="4"/>
-        <FormControl mt="3">
-          <FormControl.Label>ADD RESI</FormControl.Label>
-          <Input 
-                type="text"
-                value={resi}
-                onChangeText= {text => setResi(text)}
-          />
-        </FormControl>
+        <Box alignSelf="center">
+        <Text my="3" bold>Bukti Transfer Admin</Text>
+        <Image 
+                source={{uri : dataModal.imgValid}}
+                size="2xl"
+                alt='foto'
+                />
         </Box>
-        :
-        <Box>
+                
 
-        </Box>
-        
-        }
-     
 
-  
+    
           </Modal.Body>
           <Modal.Footer>
             <Button.Group space={2}>
@@ -239,8 +233,6 @@ const PesananPenjual = () => {
               </Button>
               <Button onPress={() => {
               setShowModal(false);
-              handleUpdateResi(dataModal?.idPesanan);
-              setResi("")
             }} colorScheme="green">
                 Done
               </Button>
@@ -255,4 +247,4 @@ const PesananPenjual = () => {
   )
 }
 
-export default PesananPenjual
+export default HistoryPenjual

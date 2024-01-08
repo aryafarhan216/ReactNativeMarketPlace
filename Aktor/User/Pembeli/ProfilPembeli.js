@@ -31,13 +31,12 @@ const ProfilPembeli = ({navigation}) => {
         if (docSnap.exists()) {
           setDataUser( docSnap.data())
         } else {
-          // doc.data() will be undefined in this case
           console.log("No such document!");
         }
       }
       dataUser && getData()
     }
-  },[dataUser])
+  },[])
 
   const handleMap = async() =>{
     console.log("masuk handle map")
@@ -82,16 +81,6 @@ const ProfilPembeli = ({navigation}) => {
       alert("sudah terupdate")
   }
 
-  const handlePenjual = async () =>{
-    const updateUser = doc(db, "user",`${auth.currentUser?.uid}`)
-    await updateDoc(updateUser, {
-      seller: true
-    })
-    .then(() =>{navigation.navigate('Penjual')})
-    .catch((err) => alert(err))
-    
-  }
-
   const handleLogOut = () =>{
     signOut(auth).then(() => {
       navigation.navigate('Login')
@@ -104,9 +93,6 @@ const ProfilPembeli = ({navigation}) => {
     <NativeBaseProvider>
     <SafeAreaView>
       <ScrollView>
-      <Box alignItems="flex-end">
-        <Button size="sm" colorScheme="green" mt="3" onPress={handlePenjual}>Penjual</Button>
-        </Box>
       <Box backgroundColor="white" mt="4" mx="3" p="4" rounded="md">
           <Box>
           <Center mt="4">
@@ -171,9 +157,7 @@ const ProfilPembeli = ({navigation}) => {
         </Box>
         <Box alignItems="center">
         <Button size="sm" colorScheme="red" my="3" onPress={handleLogOut}>Log Out</Button>
-        </Box>
-        
-
+        </Box>  
       </ScrollView>
     </SafeAreaView>
     </NativeBaseProvider>

@@ -13,6 +13,7 @@ import PesananPenjual from "../User/Penjual/PesananPenjual";
 import ProfilPenjual from "../User/Penjual/ProfilPenjual";
 import ListProduk from "../User/Penjual/ListProduk";
 import ListChatPenjual from "../User/Penjual/ListChatPenjual";
+import HistoryPenjual from "../User/Penjual/HistoryPenjual";
 
 
 const Tab = createBottomTabNavigator();
@@ -43,6 +44,14 @@ const BottomNavPenjual = () => {
             tabBarLabel:"Pesanan",
             tabBarIcon:({color, size}) => (
                 <Entypo name="text-document-inverted" size={24} color="#EFAF00" />
+            )
+        }}
+      />
+            <Tab.Screen name="History" component={HistoryPenjual} 
+            options={{
+            tabBarLabel:"History",
+            tabBarIcon:({color, size}) => (
+              <FontAwesome name="history" size={24} color="#EFAF00"/>
             )
         }}
       />

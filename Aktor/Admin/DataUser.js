@@ -84,7 +84,7 @@ const DataUser = ({navigation}) => {
           width: '39%'
         }}>{data?.emailId}</Box>
             <Box style={{
-          width: '41%'
+          width: '23%'
         }}>{data?.noHp}</Box>
           </HStack>
           <Divider my="2"/>

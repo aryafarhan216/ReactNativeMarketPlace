@@ -1,8 +1,9 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, provider } from "../../firebase";
+import { doc, setDoc } from "firebase/firestore"; 
 import { Box, Text, Heading, VStack, FormControl, Input, Link, Button, HStack, Center, NativeBaseProvider, Image } from "native-base";
 const Logo = require('../../assets/src/Logo.png')
 
@@ -14,7 +15,7 @@ export default function Login ({navigation}){
     React.useEffect(()=>{
         const unsub = auth.onAuthStateChanged(user => {
             if(user){
-                navigation.navigate("User")
+                navigation.navigate("Loading")
                 setIsValid(false)
             }
         })
@@ -40,6 +41,15 @@ export default function Login ({navigation}){
         }
 
     }
+
+    const addUser = async (uid, emailId) =>{
+        await setDoc(doc(db, "user", uid), {
+            emailId: emailId,
+            address:"",
+            seller:false,
+            timestamp: serverTimestamp()
+          })
+    }
     return(
         <NativeBaseProvider>
         <Center  flex={1} px="3">
@@ -59,7 +69,7 @@ export default function Login ({navigation}){
             }}>
             Welcome
             </Heading>
-            <VStack space={3} mt="5">
+            <VStack space={3}>
             <FormControl>
                 <FormControl.Label>Email</FormControl.Label>
                 <Input 

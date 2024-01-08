@@ -112,9 +112,12 @@ const DetailProduk = ({route, navigation}) => {
                 <Box py="3">
                     <Text bold fontSize="xl" color="#EFAF00" m="0" p="0"> Rp {detailProduk.hargaProduk} </Text>
                     <Text bold fontSize="lg"> {detailProduk.namaProduk}</Text>
+                    <HStack>
                     <Box>
-                        <Text> Toko : {dataDetail.namaToko} </Text>
-                    </Box>
+                            <Text> Toko : {dataDetail.namaToko} </Text>
+                            <Text> Stok : {detailProduk.stokProduk}</Text>
+                        </Box>
+                    </HStack>
                 </Box>
                 <Divider />
                 <Box py="3">
@@ -129,9 +132,10 @@ const DetailProduk = ({route, navigation}) => {
                             </Box>
                             <Box>
                                 <Text> Umur : {detailProduk.umurProduk}</Text>
-                                <Text> Stok : {detailProduk.stokProduk}</Text>
+                                <Text> Ukuran : {detailProduk.miliProduk} ml</Text>
                             </Box>
                         </HStack>
+
                     </Box>
                 </Box>
                 <Divider />

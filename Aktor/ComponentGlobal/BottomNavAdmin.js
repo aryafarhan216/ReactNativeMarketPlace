@@ -10,6 +10,7 @@ import DataPenjual from "../Admin/DataPenjual";
 import DataUser from "../Admin/DataUser";
 import KonfirmasiPesanan from "../Admin/KonfirmasiPesanan";
 import PesananBerhasil from "../Admin/PesananBerhasil";
+import PesananSelesai from "../Admin/PesananSelesai";
 
 
 const Tab = createBottomTabNavigator();
@@ -18,7 +19,7 @@ const BottomNavAdmin = () => {
   return (
     
     <Tab.Navigator
-    initialRouteName="Home"
+    initialRouteName="Data User"
     >
       <Tab.Screen name="Data User" component={DataUser} 
         options={{
@@ -39,6 +40,14 @@ const BottomNavAdmin = () => {
       <Tab.Screen name="Konfirmasi Pesanan" component={KonfirmasiPesanan} 
             options={{
             tabBarLabel:"Konfirmasi",
+            tabBarIcon:({color, size}) => (
+              <MaterialIcons name="pending-actions" size={24} color="#EFAF00" />
+            )
+        }}
+      />
+            <Tab.Screen name="Pesanan Selesai" component={PesananSelesai} 
+            options={{
+            tabBarLabel:"Pesanan Selesai",
             tabBarIcon:({color, size}) => (
               <MaterialIcons name="pending-actions" size={24} color="#EFAF00" />
             )

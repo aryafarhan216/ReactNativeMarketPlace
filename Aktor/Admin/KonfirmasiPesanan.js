@@ -28,6 +28,7 @@ const KonfirmasiPesanan = () => {
     // pembeli
     namaPembeli:"",
     noHpPembeli:"",
+    stokBeli:"",
     // penjual
     namaToko:"",
     rekening:"",
@@ -55,73 +56,7 @@ const KonfirmasiPesanan = () => {
         }
       )
 
-      // Upload image
-      console.log("masuk focus")
-      // upload image
-      const blobImage = async() =>{
-        console.log("masukBlob")
-        const blob = await new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.onload = function () {
-            resolve(xhr.response);
-          };
-          xhr.onerror = function (e) {
-            console.log(e);
-            reject(new TypeError("Network request failed"));
-          };
-          xhr.responseType = "blob";
-          xhr.open("GET", image, true);
-          xhr.send(null);
-          
-        });
-  
-  
-        return uploadImage(blob)
-      }
-      const uploadImage = (blob) =>{
-        let name = "validatonAdmin/" + "|"+new Date().getTime()
-        const storageRef = ref(storage, 'images/' + name);
-        const uploadTask = uploadBytesResumable(storageRef, blob);
-      // Listen for state changes, errors, and completion of the upload.
-        uploadTask.on(
-          'state_changed',  
-          (snapshot) => {
-            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            console.log('Upload is ' + progress + '% done');
-            switch (snapshot.state) {
-              case 'paused':
-                console.log('Upload is paused');
-                break;
-              case 'running':
-                console.log('Upload is running');
-                break;
-            }
-          }, 
-          (error) => {
-            switch (error.code) {
-              case 'storage/unauthorized':
-                alert(error)
-                break;
-              case 'storage/canceled':
-                alert(error)
-                break;
-              case 'storage/unknown':
-                alert(error)
-                break;
-            }
-          }, 
-          () => {
-            // Upload completed successfully, now we can get the download URL
-            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-              setFotoProduk(downloadURL)
-              blob.close();
-            });
-          }
-        );
-        
-      }
-      image && blobImage();
+
       return () =>{
         realData()
       }
@@ -142,19 +77,6 @@ const KonfirmasiPesanan = () => {
     setImage(null)
   }
 
-  const pickImage = async () =>{
-    console.log("masuk foto")
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if(!result.canceled){
-      setImage(result.assets[0].uri)
-    }
-  }
   return (
     <NativeBaseProvider>
       <ScrollView backgroundColor="white">
@@ -201,6 +123,7 @@ const KonfirmasiPesanan = () => {
               namaPembeli:data?.detailPembeli?.nama,
               noHpPembeli:data?.detailPembeli?.noHp ,
               imgBukti:data?.imgValid,
+              stokBeli : data?.stokBeli,
               // penjual
               namaToko:data?.detailPenjual?.detailToko?.namaToko,
               rekening:data?.detailPenjual?.detailToko?.bank?.rekening,
@@ -316,11 +239,14 @@ const KonfirmasiPesanan = () => {
               </Text>
               </Box>
                 <Box >
-                <Text fontSize="sm">
+                <Text>
                 {dataModal?.noHpPembeli}
                 </Text>
               </Box>
                 <Box >
+                <Text bold color="#EFAF00" fontSize="sm">
+                  Stok : {dataModal?.stokBeli}
+                </Text>
                 <Text bold color="#EFAF00" fontSize="sm">
                   RP. {dataModal?.hargaProduk}
                 </Text>
@@ -339,16 +265,6 @@ const KonfirmasiPesanan = () => {
             <Box>
             </Box>
             <Divider my="2"/>
-            {image && 
-              <Center>
-              <Text my="3">Foto Bukti Transfer Admin</Text>
-              <Image source={{ uri: image }} style={{ width: 200, height: 200 }} alt="Fotobukti"/>
-              </Center>
-            }
-          <Text bold mt="2"> Upload Bukti Transfer</Text>
-          <Button onPress={pickImage} colorScheme="yellow">
-          upload
-          </Button>
         </Box>
         </VStack>
           </Modal.Body>
@@ -360,15 +276,11 @@ const KonfirmasiPesanan = () => {
                 Cancel
               </Button>
               <Button onPress={() => {
-              if(image){
-                setShowModal(false);
+             setShowModal(false);
               handleStatus(dataModal.idPesanan);
-              }else{
-                alert("bukti tranfer belom diupload")
-              }
               
             }} colorScheme="yellow">
-                Done
+                Konfirmasi
               </Button>
             </Button.Group>
           </Modal.Footer>

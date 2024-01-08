@@ -29,20 +29,6 @@ const Homepage = ({navigation}) => {
         (error) =>{
           console.log(error)
         }
-
-
-        // const realData  = onSnapshot(
-        //   collection(db,"produk"),
-        //   (snapShot) =>{
-        //     let tempList = []
-        //     snapShot.docs.forEach((doc) => {
-        //       tempList.push(doc.data())
-        //     });
-        //     setData(tempList)
-        //   },
-        //   (error) =>{
-        //     console.log(error)
-        //   }
         )
         return () =>{
           realData()
@@ -98,9 +84,14 @@ const Homepage = ({navigation}) => {
                       Cocok : {data?.jenisKelamin}
                     </Text>
                   </Box>
-                                <Box >
+                  <Box >
                     <Text fontSize="xs">
                       Umur : {data?.umurProduk}
+                    </Text>
+                  </Box>
+                  <Box >
+                    <Text fontSize="xs">
+                      Ukuran : {data?.miliProduk} ml
                     </Text>
                   </Box>
                   <Box >

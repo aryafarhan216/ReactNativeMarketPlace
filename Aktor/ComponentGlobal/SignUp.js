@@ -3,7 +3,8 @@ import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db} from "../../firebase";
 import { doc, setDoc } from "firebase/firestore"; 
-import { Box, Text, Heading, VStack, FormControl, Input, Link, Button, HStack, Center, NativeBaseProvider, Image, Alert } from "native-base";
+import { Box, Text, Heading, VStack, FormControl, Input, Link, 
+    Button, HStack, Center, NativeBaseProvider, Image, Alert, ScrollView, Radio, Stack } from "native-base";
 import { serverTimestamp } from "firebase/firestore";
 const Logo = require('../../assets/src/Logo.png')
 
@@ -11,7 +12,9 @@ const SignUp = ({navigation}) => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [hp, setHp] = useState('')
-
+    const [nama, setNama] = useState('')
+    // choose ur character 
+    const [value, setValue] = useState("1");
     const handelSignUp = () =>{
         createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
@@ -25,18 +28,34 @@ const SignUp = ({navigation}) => {
     }
 
     const addUser = async(uid, email) =>{
-        await setDoc(doc(db, "user", uid), {
-            emailId: email,
-            noHp: hp,
-            address:"",
-            seller:false,
-            isSiantar:false,
-            timestamp: serverTimestamp()
-          });
+        if(value === '1'){
+            await setDoc(doc(db, "user", uid), {
+                nama: nama,
+                emailId: email,
+                noHp: hp,
+                address:"",
+                seller:false,
+                isSiantar:false,
+                timestamp: serverTimestamp()
+              });
+        }else{
+            await setDoc(doc(db, "user", uid), {
+                nama: nama,
+                emailId: email,
+                noHp: hp,
+                address:"",
+                seller:true,
+                isSiantar:false,
+                timestamp: serverTimestamp()
+              });
+        }
+        
     }
 
+    console.log(value)
   return (
     <NativeBaseProvider>
+    <ScrollView>
     <Center  flex={1} px="3">
         <Center w="100%">
     <Box safeArea p="2" py="5" w="90%" maxW="290">
@@ -54,7 +73,36 @@ const SignUp = ({navigation}) => {
         }}>
         Sign Up
         </Heading>
-        <VStack space={3} mt="5">
+
+        <Center flex={1} px="3" my="4">
+        <Radio.Group name="myRadioGroup" accessibilityLabel="favorite number" defaultValue="1"  onChange={nextValue => {
+            setValue(nextValue) 
+        }}>
+        <Stack direction={{
+        base: "row"
+        }} alignItems={{
+        base: "flex-start"
+        }} space={4} w="75%" maxW="300px">
+            <Radio value="1" colorScheme="yellow" size="sm" my={1}>
+            Pembeli
+            </Radio>
+            <Radio value="2" colorScheme="yellow" size="sm" my={1}>
+            Penjual
+            </Radio>
+        </Stack>
+        </Radio.Group>
+        </Center>
+
+        <VStack space={3}>
+        <FormControl>
+            <FormControl.Label>Nama</FormControl.Label>
+            <Input 
+                type="text"
+                placeholder="sbc"
+                value={nama}
+                onChangeText= {text => setNama(text)}
+            />
+        </FormControl>
         <FormControl>
             <FormControl.Label>Email</FormControl.Label>
             <Input 
@@ -101,6 +149,7 @@ const SignUp = ({navigation}) => {
     </Box>
     </Center>
     </Center>
+    </ScrollView>
 </NativeBaseProvider>
   )
 }
