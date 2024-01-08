@@ -12,6 +12,13 @@ import BottomNavAdmin from './Aktor/ComponentGlobal/BottomNavAdmin';
 import Chat from './Aktor/User/Pembeli/Chat';
 import ChatPenjual from './Aktor/User/Penjual/ChatPenjual';
 import Loading from './Aktor/ComponentGlobal/Loading';
+import 'expo-dev-client';
+import LoginGoogle from './Aktor/ComponentGlobal/LoginGoogle';
+import BottomNavGoogle from './Aktor/ComponentGlobal/BottomNavGoogle';
+import DetailProdukGoogle from './Aktor/User/PembeliGoogle/DetailProdukGoogle';
+import FormPembelianGoogle from './Aktor/User/PembeliGoogle/FormPembelianGoogle';
+import ChatGoogle from './Aktor/User/PembeliGoogle/ChatGoogle';
+import EditProduk from './Aktor/User/Penjual/EditProduk';
 
 // Variable Stack
 const Stack = createNativeStackNavigator();
@@ -27,6 +34,10 @@ export default function App() {
         options={{headerShown:false}}
         />
         <Stack.Screen 
+        name="LoginGoogle" 
+        component={LoginGoogle} 
+        />
+        <Stack.Screen 
         name="SignUp" 
         component={SignUp} 
         options={{headerShown:false}}
@@ -34,6 +45,11 @@ export default function App() {
         <Stack.Screen 
         name="User" 
         component={BottomNav} 
+        options={{headerShown:false}}
+        />
+         <Stack.Screen 
+        name="UserGoogle" 
+        component={BottomNavGoogle} 
         options={{headerShown:false}}
         />
         <Stack.Screen 
@@ -51,12 +67,28 @@ export default function App() {
         component={DetailProduk} 
         />
         <Stack.Screen 
+        name="DetailPageGoogle" 
+        component={DetailProdukGoogle} 
+        />
+        <Stack.Screen 
+        name="EditProduk" 
+        component={EditProduk} 
+        />
+        <Stack.Screen 
         name="FormPembelian" 
         component={FormPembelian} 
+        />
+         <Stack.Screen 
+        name="FormPembelianGoogle" 
+        component={FormPembelianGoogle} 
         />
         <Stack.Screen 
         name="Chat" 
         component={Chat} 
+        />
+          <Stack.Screen 
+        name="ChatGoogle" 
+        component={ChatGoogle} 
         />
        <Stack.Screen 
         name="ChatPenjual" 
