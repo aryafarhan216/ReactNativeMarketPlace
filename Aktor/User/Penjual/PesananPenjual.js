@@ -63,20 +63,33 @@ const PesananPenjual = () => {
     const produkData = dataModal?.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk;
     const totalOngkirData = dataModal?.pesanan?.totalDataOngkir;
     
+    const hargaProduk =  dataModal.pesanan?.produk[0].miliBeli === "1" ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].hargaProduk : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0][`hargaProduk${dataModal.pesanan?.produk[0].miliBeli - 1}`]
+    const hargaOngkir = dataModal?.pesanan?.totalDataOngkir[0].hargaOngkir
+    const ongkir = hargaOngkir - hargaProduk
     
     if (produkData && totalOngkirData) {
       const produkLength = produkData.length;
       console.log(produkLength)
       let sum = 0;
       for (let i = 0; i < produkLength; i++) {
-        sum += totalOngkirData[i]?.hargaOngkir || 0;
+        const hargaProduk1 = dataModal.pesanan?.produk[i].miliBeli === "1" ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[i].hargaProduk : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[i][`hargaProduk${dataModal.pesanan?.produk[i].miliBeli - 1}`]
+        sum += parseInt(hargaProduk1)
       }
-      console.log(sum)
-      return sum;
+      console.log(sum + ongkir)
+      return sum + ongkir;
     }
+    
     
     return 0; // Return 0 in case the necessary data is not available
   };
+
+  const getOngkir = () =>{
+
+    const hargaProduk =  dataModal.pesanan?.produk[0].miliBeli === "1" ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].hargaProduk : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0][`hargaProduk${dataModal.pesanan?.produk[0].miliBeli - 1}`]
+    const hargaOngkir = dataModal?.pesanan?.totalDataOngkir[0].hargaOngkir
+    const ongkir = hargaOngkir - hargaProduk
+    return ongkir
+  }
 
   console.log("pesanan", auth.currentUser.uid)
   return (
@@ -151,7 +164,9 @@ const PesananPenjual = () => {
                 </Box>
                 <Box>
                   <Text bold color="#EFAF00" fontSize="sm">
-                    RP. {produk.hargaProduk}
+                    RP. {data?.produk[index].miliBeli === "1"
+    ? data?.detailDataPenjual[0]?.detailPenjual?.produk[index].hargaProduk
+    : data?.detailDataPenjual[0]?.detailPenjual?.produk[index][`hargaProduk${data?.produk[index].miliBeli - 1}`]}
                   </Text>
                 </Box>
                 <Box>
@@ -236,7 +251,9 @@ const PesananPenjual = () => {
             </Box>
             <Box>
               <Text bold color="#EFAF00" fontSize="sm">
-                RP. {produk.hargaProduk}
+                RP. {dataModal.pesanan?.produk[index].miliBeli === "1"
+    ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index].hargaProduk
+    : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index][`hargaProduk${dataModal.pesanan?.produk[index].miliBeli - 1}`]}
               </Text>
             </Box>
             <Box>
@@ -273,7 +290,8 @@ const PesananPenjual = () => {
         {dataModal.jasaOngkir === "one" 
         ?
         <Box>
-        <Text bold fontSize="md"> Total {getTotalOngkirSum()}</Text>
+        <Text bold> Ongkir {getOngkir()}</Text>
+        <Text bold fontSize="xl"> Total {getTotalOngkirSum()}</Text>
         <Divider mt="2"/>
         <FormControl mt="3">
           <FormControl.Label>ADD RESI</FormControl.Label>

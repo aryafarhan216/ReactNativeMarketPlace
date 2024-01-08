@@ -58,7 +58,7 @@ const Homepage = ({ navigation }) => {
 
       fetchData();
     }
-  }, [focus]);
+  }, [focus] );
   const handleZodiacChange = (values) => {
     setSelectedZodiac(values);
   };
@@ -96,6 +96,7 @@ const Homepage = ({ navigation }) => {
     handleSearch();
   }, [selectedZodiac, selectedGender]);
 
+  //hasil
   return (
     <NativeBaseProvider>
       <SafeAreaView>
@@ -175,6 +176,7 @@ const Homepage = ({ navigation }) => {
                       </Checkbox.Group>
                     </FormControl>
                   </Actionsheet.Item>
+
                   <Actionsheet.Item>
                     <FormControl>
                       <FormControl.Label>Cocok:</FormControl.Label>
@@ -196,12 +198,13 @@ const Homepage = ({ navigation }) => {
             </HStack>
           </Box>
           {/* End of search */}
+
           {data.length === 0 ? (
             <Center pt="5">
               <Text>No Products Available</Text>
             </Center>
           ) : (
-            <Box>
+              <Box>
               {data.map((data, index) => {
                 return (
                   <Pressable
@@ -267,6 +270,7 @@ const Homepage = ({ navigation }) => {
               })}
             </Box>
           )}
+          
         </ScrollView>
       </SafeAreaView>
     </NativeBaseProvider>

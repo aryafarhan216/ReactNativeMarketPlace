@@ -391,7 +391,7 @@ const getIdCityPenjual = async () => {
       const docRef = collection(db, 'pesanan');
       const totalOngkirList = [];
   
-
+      console.log("ini", listDetail[0].length)
   
       for (let index = 0; index < listDetail[0].length; index++) {
         const miliArray = Array.isArray(miliProduk) ? miliProduk[index] : miliProduk; // Get the nested array for miliProduk
@@ -435,7 +435,7 @@ const getIdCityPenjual = async () => {
         }
        
 
-
+        console.log("disini", item.produk.length)
         for (let i = 0; i < item.produk.length; i++) {
           const selectedStokField = pivot === 0 ? 'stokProduk' : pivot === 1 ? 'stokProduk1' : 'stokProduk2';
           const stokProduk = item.produk[i][selectedStokField];
@@ -484,13 +484,22 @@ const getIdCityPenjual = async () => {
             return; // Exit the function if any stok is insufficient
           }
         }
+
         const detailDataPenjualCopy = { ...detailDataPenjual };
         pesananData.jasaDataOngkir.push(jasaDataOngkir)
         pesananData.detailDataPenjual.push(detailDataPenjualCopy);
         const pesananDataCopy = { ...pesananData };
         pesananDataCopy.detailDataPenjual = [ ...pesananData.detailDataPenjual ];
+        if (
+          pesananData.detailDataPenjual &&
+          pesananData.detailDataPenjual.length > 0 &&
+          pesananData.detailDataPenjual[0] &&
+          typeof pesananData.detailDataPenjual[0].detailPenjual.idWishlist === 'undefined'
+        ) {
+          pesananData.detailDataPenjual[0].detailPenjual.idWishlist = null;
+        }
         
-        await setDoc(doc(docRef, `${pesananDataCopy.idPesanan}`), pesananDataCopy)
+        await setDoc(doc(docRef, `${pesananDataCopy.idPesanan}`), pesananData)
         .then(() => {alert(`loading upload file ke-${index + 1}`)
         
   

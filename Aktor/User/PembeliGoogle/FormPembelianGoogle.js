@@ -484,8 +484,16 @@ const getIdCityPenjual = async () => {
         pesananData.detailDataPenjual.push(detailDataPenjualCopy);
         const pesananDataCopy = { ...pesananData };
         pesananDataCopy.detailDataPenjual = [ ...pesananData.detailDataPenjual ];
+        if (
+          pesananData.detailDataPenjual &&
+          pesananData.detailDataPenjual.length > 0 &&
+          pesananData.detailDataPenjual[0] &&
+          typeof pesananData.detailDataPenjual[0].detailPenjual.idWishlist === 'undefined'
+        ) {
+          pesananData.detailDataPenjual[0].detailPenjual.idWishlist = null;
+        }
         
-        await setDoc(doc(docRef, `${pesananDataCopy.idPesanan}`), pesananDataCopy)
+        await setDoc(doc(docRef, `${pesananDataCopy.idPesanan}`), pesananData)
         .then(() => {alert(`loading upload file ke-${index + 1}`)
         
   

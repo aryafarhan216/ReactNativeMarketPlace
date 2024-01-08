@@ -86,6 +86,38 @@ const ProdukPembeli = ({navigation}) => {
       alert("Pesanan diBatalkan")
   }
 
+  const getTotalOngkirSum = () => {
+    const produkData = dataModal?.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk;
+    const totalOngkirData = dataModal?.pesanan?.totalDataOngkir;
+    
+    const hargaProduk =  dataModal.pesanan?.produk[0].miliBeli === "1" ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].hargaProduk : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0][`hargaProduk${dataModal.pesanan?.produk[0].miliBeli - 1}`]
+    const hargaOngkir = dataModal?.pesanan?.totalDataOngkir[0].hargaOngkir
+    const ongkir = hargaOngkir - hargaProduk
+    
+    if (produkData && totalOngkirData) {
+      const produkLength = produkData.length;
+      console.log(produkLength)
+      let sum = 0;
+      for (let i = 0; i < produkLength; i++) {
+        const hargaProduk1 = dataModal.pesanan?.produk[i].miliBeli === "1" ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[i].hargaProduk : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[i][`hargaProduk${dataModal.pesanan?.produk[i].miliBeli - 1}`]
+        sum += parseInt(hargaProduk1)
+      }
+      console.log(sum + ongkir)
+      return sum + ongkir;
+    }
+    
+    
+    return 0; // Return 0 in case the necessary data is not available
+  };
+
+  const getOngkir = () =>{
+
+    const hargaProduk =  dataModal.pesanan?.produk[0].miliBeli === "1" ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].hargaProduk : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0][`hargaProduk${dataModal.pesanan?.produk[0].miliBeli - 1}`]
+    const hargaOngkir = dataModal?.pesanan?.totalDataOngkir[0].hargaOngkir
+    const ongkir = hargaOngkir - hargaProduk
+    return ongkir
+  }
+
   return (
     <NativeBaseProvider>
     <SafeAreaView>
@@ -151,7 +183,9 @@ const ProdukPembeli = ({navigation}) => {
                 </Box>
                 <Box>
                   <Text bold color="#EFAF00" fontSize="sm">
-                    RP. {produk.hargaProduk}
+                    RP. {dataPesanan?.produk[index].miliBeli === "1"
+    ? dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index].hargaProduk
+    : dataPesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index][`hargaProduk${dataPesanan?.produk[index].miliBeli - 1}`]}
                   </Text>
                 </Box>
                 <Box>
@@ -260,7 +294,9 @@ const ProdukPembeli = ({navigation}) => {
             </Box>
             <Box>
               <Text bold color="#EFAF00" fontSize="sm">
-                RP. {produk.hargaProduk}
+              {dataModal.pesanan?.produk[index].miliBeli === "1"
+    ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index].hargaProduk
+    : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index][`hargaProduk${dataModal.pesanan?.produk[index].miliBeli - 1}`]}
               </Text>
             </Box>
             <Box>
@@ -313,7 +349,10 @@ const ProdukPembeli = ({navigation}) => {
     </Box>
   </VStack>
 ))}
-<Text bold fontSize="xl"> Total Ongkir: {dataModal?.totalOngkir}</Text>
+<Text bold >Ongkir: {getOngkir()}</Text>
+<Text bold >Total: {getTotalOngkirSum()}</Text>
+<Text>Detail </Text>
+<Text bold fontSize="xl"> Total Belanja: {dataModal?.totalOngkir}</Text>
           {dataModal.pesanan?.isDone === true ? (
               <Button colorScheme="yellow" onPress={() => { setShowModal(false); }}>
                 Okay

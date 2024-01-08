@@ -8,27 +8,29 @@ import * as ImagePicker from "expo-image-picker/src/ImagePicker";
 
 const EditProduk = ({route, navigation}) => {
   const {detailProduk} = route.params
-  console.log("isi Edit Stok", detailProduk)
-  const [namaProduk, setNamaProduk] = useState("");
-  const [descProduk, setDescProduk] = useState("");
-  const [fotoProduk, setFotoProduk] = useState(null)
-  const [image, setImage] = useState(null)
+  const [namaProduk, setNamaProduk] = useState(detailProduk.namaProduk);
+  const [descProduk, setDescProduk] = useState(detailProduk.descProduk);
+  const [fotoProduk, setFotoProduk] = useState(detailProduk.imgProduk)
+  const [image, setImage] = useState(detailProduk.imgProduk)
 
   const [perc, setPerc] = useState(null)
   // kategori
-  const [umurProduk, setUmurProduk] = useState("");
-  const [hargaProduk, setHargaProduk] = useState("");
-  const [mili, setMili] = useState("");
-  const [stokProduk, setStokProduk] = useState("");
-  const [hargaProduk1, setHargaProduk1] = useState("");
-  const [mili1, setMili1] = useState("");
-  const [stokProduk1, setStokProduk1] = useState("");
-  const [hargaProduk2, setHargaProduk2] = useState("");
-  const [mili2, setMili2] = useState("");
-  const [stokProduk2, setStokProduk2] = useState("");
+  const [umurProduk, setUmurProduk] = useState(detailProduk.umurProduk);
+  const [hargaProduk, setHargaProduk] = useState(detailProduk.hargaProduk);
+  const [mili, setMili] = useState(detailProduk.miliProduk);
+  const stok = '' + detailProduk.stokProduk
+  const [stokProduk, setStokProduk] = useState(stok);
 
-  const [value, setValue] = useState("UNISEX");
-  const [service, setService] = useState("Semua Zodiak");
+  const [hargaProduk1, setHargaProduk1] = useState(detailProduk.hargaProduk1);
+  const [mili1, setMili1] = useState(detailProduk.miliProduk1);
+  const [stokProduk1, setStokProduk1] = useState(detailProduk.stokProduk1);
+
+  const [hargaProduk2, setHargaProduk2] = useState(detailProduk.hargaProduk2);
+  const [mili2, setMili2] = useState(detailProduk.miliProduk2);
+  const [stokProduk2, setStokProduk2] = useState(detailProduk.stokProduk2);
+
+  const [value, setValue] = useState(detailProduk.jenisKelamin);
+  const [service, setService] = useState(detailProduk.zodiak);
   
   useEffect(() => {
     const blobImage = async() =>{
@@ -133,32 +135,12 @@ const EditProduk = ({route, navigation}) => {
       })
       .then(() =>{
         alert("Produk Berhasil diUploud")
-        setNamaProduk("")
-        setHargaProduk("")
-        setStokProduk("")
-        setDescProduk("")
-        setService("Semua Zodiak")
-        setValue("UNISEX")
-        setHargaProduk("")
-        setUmurProduk("")
-        setHargaProduk("")
-        setStokProduk("")
-        setMili("")
-        setHargaProduk1("")
-        setStokProduk1("")
-        setMili1("")
-        setHargaProduk2("")
-        setStokProduk2("")
-        setMili2("")
-        setFotoProduk(null)
-        setImage(null)
       navigation.navigate('List Produk');
       }).catch((err) => alert(err));
     }else{
       alert("Form ada yang kosong")
     }
   }
-  console.log(image)
   return (
     <NativeBaseProvider>
       <SafeAreaView>
@@ -215,7 +197,7 @@ const EditProduk = ({route, navigation}) => {
               <Box width="20%">
               <FormControl >
                 <FormControl.Label>Stok</FormControl.Label>
-                <Input  keyboardType='numeric' 
+                <Input keyboardType='numeric' 
                     
                     type="text"
                     value={stokProduk}

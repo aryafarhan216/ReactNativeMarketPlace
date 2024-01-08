@@ -82,21 +82,33 @@ const KonfirmasiPesanan = () => {
     const produkData = dataModal?.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk;
     const totalOngkirData = dataModal?.pesanan?.totalDataOngkir;
     
+    const hargaProduk =  dataModal.pesanan?.produk[0].miliBeli === "1" ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].hargaProduk : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0][`hargaProduk${dataModal.pesanan?.produk[0].miliBeli - 1}`]
+    const hargaOngkir = dataModal?.pesanan?.totalDataOngkir[0].hargaOngkir
+    const ongkir = hargaOngkir - hargaProduk
     
     if (produkData && totalOngkirData) {
       const produkLength = produkData.length;
       console.log(produkLength)
       let sum = 0;
       for (let i = 0; i < produkLength; i++) {
-        sum += totalOngkirData[i]?.hargaOngkir || 0;
+        const hargaProduk1 = dataModal.pesanan?.produk[i].miliBeli === "1" ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[i].hargaProduk : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[i][`hargaProduk${dataModal.pesanan?.produk[i].miliBeli - 1}`]
+        sum += parseInt(hargaProduk1)
       }
-      console.log(sum)
-      return sum;
+      console.log(sum + ongkir)
+      return sum + ongkir;
     }
+    
     
     return 0; // Return 0 in case the necessary data is not available
   };
 
+  const getOngkir = () =>{
+
+    const hargaProduk =  dataModal.pesanan?.produk[0].miliBeli === "1" ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0].hargaProduk : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[0][`hargaProduk${dataModal.pesanan?.produk[0].miliBeli - 1}`]
+    const hargaOngkir = dataModal?.pesanan?.totalDataOngkir[0].hargaOngkir
+    const ongkir = hargaOngkir - hargaProduk
+    return ongkir
+  }
   return (
     <NativeBaseProvider>
       <ScrollView backgroundColor="white">
@@ -239,13 +251,12 @@ const KonfirmasiPesanan = () => {
               {dataModal.pesanan?.produk[index].miliBeli}
                 Stok dibeli: {dataModal.pesanan?.produk[index].stokBeli}
               </Text>
-              <Text fontSize="sm">
-                Ongkos: {dataModal.pesanan?.totalDataOngkir[index].hargaOngkir}
-              </Text>
             </Box>
             <Box>
               <Text bold color="#EFAF00" fontSize="sm">
-                RP. {produk.hargaProduk}
+                RP. {dataModal.pesanan?.produk[index].miliBeli === "1"
+    ? dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index].hargaProduk
+    : dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.produk[index][`hargaProduk${dataModal.pesanan?.produk[index].miliBeli - 1}`]}
               </Text>
             </Box>
             <Box>
@@ -269,6 +280,7 @@ const KonfirmasiPesanan = () => {
         </Box>
         <Divider my="2"/>
         <Box>
+        <Text bold fontSize="md">ONGKIR : {getOngkir()} </Text>
         <Text bold fontSize="md">Admin TRANSFER : {getTotalOngkirSum()}</Text>
         <Text>Rekening       : {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.detailToko.bank.rekening}</Text>
         <Text>No Rekening : {dataModal.pesanan?.detailDataPenjual[0]?.detailPenjual?.detailToko.bank.noRekening}</Text>
